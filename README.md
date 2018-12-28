@@ -229,14 +229,14 @@ assertion
 # How to use it
 
 1. set the following lines in your test suit
-
+```
     include 'simple_unit_test.php';
     use SimpleUnitTest\Test;
     Test::Set_URL('URL/of/your/test-suit');
     include 'header.html.php';
-
+```
 2. create a Test object
-
+```
     $Test=new Test('Demo', array(
                      'constructor_params'=>array(of-parameters),
                      'autoload'=>'my_autoloader',
@@ -251,7 +251,7 @@ assertion
                      			)
 							)
     );
-
+```
 3. set the relevant test cases
 ```
     $test_method1=array(
