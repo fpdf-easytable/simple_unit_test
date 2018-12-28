@@ -1,6 +1,16 @@
-# simple_unit_test
+# Simple Unit Test
 
-Imagine you have written a program that does a simple calculation, say, computeing the area
+Simple Unit Test is a php class to test php code. The test Why over http? It is highly 
+probably you are developing a web application, therefore server configuration is a 
+criteria to be considered.
+
+More than attempt to be an exhaustive unit test, Simple Unit Test is a proof of the concept.
+The concept that testing should be simple, straight forward and automatic.
+
+
+# Introduction
+
+Imagine you have written a program that does a simple calculation, that calculates the area
 of a hexagon. You run it and it gives you the area -34.56. you just know that that's wrong. 
 Why? Because no shape has a negative area. So, you fix that bug (whatever it was) and 
 get 51.452673. Is that right? That's harder to say because we don't usually keep the 
@@ -16,11 +26,103 @@ what a correct answer will be like, we don't have a clue whether our result is r
 
 Does a unit test help to develop better code? Not really, the bottom line is that the code 
 and the test cases depend on the skills of the developer. In other words, as far as one
-does not use the relevant test cases, it does not matter if one is using the super fancy 
-unit test out there or the "can you hear me?" approach.
+does not use the relevant test cases his program, it does not matter if he is using 
+the super fancy unit test out there to do the test or the "can you hear me?" approach, 
+he will still get valid data with the wrong test. 
 
-Why over http? It is highly probably you are developing a web application, therefore server 
-configuration is a criteria to be considered.
+#Comparisons
+
+Suppose we have a class HelloWorld
+
+    class HelloWorld
+    {
+        public function sayhi(){
+           return 'Hello World!';
+        }
+    }
+
+Such a simple class shuld be easy to test, right?
+
+*Using one of the most popular unit test for php*
+
+File 1
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <phpunit bootstrap="tests/bootstrap.php">
+        <testsuites>
+            <testsuite>
+                <directory>./tests</directory>
+            </testsuite>
+        </testsuites>
+        <filter>
+            <whitelist>
+                <directory>./src</directory>
+            </whitelist>
+        </filter>
+    </phpunit>
+	
+File 2 (the bootstrap thingy)
+
+    <?php
+
+    if (!@include __DIR__ . '/../vendor/autoload.php') {
+       require __DIR__ . '/../../../../vendor/autoload.php';
+    }
+
+    ?>
+
+File 3 (the "test")
+
+    <?php
+    require_once('RemoteConnect.php');
+
+    class HelloWorldTest extends PHPUnit_Framework_TestCase
+    {
+        public function setUp(){ }
+        public function tearDown(){ }
+
+        public function testSayHi()
+        {
+            $connObj = new HelloWorld();
+            $this->assertTrue($connObj->sayhi() == 'Hello World');
+        }
+    }
+    ?>
+
+*Simple Unit Test*
+
+Just one file
+
+    <?php
+    include '../Unit_test/simple_unit_test.php';
+    use SimpleUnitTest\Test;
+    Test::Set_URL('url/of/for/this/test');
+
+    include '../Unit_test/header.html.php'; // for HTML
+
+    function autoloader($class) {
+        //some code
+    }
+
+    // Instantiate a new Test object
+    $Test=new Test('HelloWorld',array(
+				'constructor_params'=>array(),
+				'autoload'=>'autoloader',
+			)
+    );
+
+    //Test
+    $Test->test('sayhi', array(
+        'Test1'=>array(array(), 'Hello World!'),
+        'Test2'=>array(array('dfdf'), 'Hello World!'),
+    ));
+
+    // Get and Print results
+    echo $Test->print_results();
+
+    ?>
+
+#Features
 
 No need to extend any class, just:
 define your autoloader function,
@@ -32,8 +134,6 @@ run the test!
 Ability to test private or public methods
 Ability to define dummies object with custom return values
 
-More than attempt to be an exhaustive unit test, simple unit test is a proof of the concept.
-The concept simple unit test is proving is that testing should be simple, straight forward,
 
 
 
