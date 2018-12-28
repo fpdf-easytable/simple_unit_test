@@ -106,34 +106,57 @@ Just one file
 
     // Instantiate a new Test object
     $Test=new Test('HelloWorld',array(
-				'constructor_params'=>array(),
-				'autoload'=>'autoloader',
-			)
+									'constructor_params'=>array(),
+									'autoload'=>'autoloader',
+								)
     );
 
     //Test
     $Test->test('sayhi', array(
-        'Test1'=>array(array(), 'Hello World!'),
-        'Test2'=>array(array('dfdf'), 'Hello World!'),
-    ));
+	   						     'Test1'=>array(array(), 'Hello World!'),
+   	   						  'Test2'=>array(array('dfdf'), 'Hello World!'),
+								    )
+    );
 
     // Get and Print results
     echo $Test->print_results();
 
     ?>
 
-#Features
+# Features
 
-No need to extend any class, just:
-define your autoloader function,
-create a Test object with the relevant parameters
-For any method of your class, set the test data to be used for testing 
-define the assertion function to be used otherwise simple comparison is used
-run the test!
-
-Ability to test private or public methods
-Ability to define dummies object with custom return values
+- No need to extend any class
+- Dummy objects (test doubles)
+- Set custom definition of assertion function to be used for the test;
+- Ability to test private or public methods
 
 
+# Documentation
 
 
+	new Test('ClassName',
+				array(
+						'constructor_params'=>array,
+						'autoload'=>string,
+						'prepend'=>false, 
+						'dummies'=>array
+			)
+	)
+	
+	'ClassName': string, it shuld set as it needs to be called (including namespace path if needed)	
+	'construnctor_params': [array/mix] of the parameters use to instantiate the object
+								if not arguments then empty array can be passed
+								if just one argument is needed, the this can be passed instead of array
+	'autoload': [string] callable function to be used to load your classes needed
+	'prepend': [bool] parameter pass to spl_autoload_register
+	'dummies': [array] define which classes and method will be alterated.
+	            It is an key/values array where the keys are the name of the 
+	            clases(full qualified names) and values are array of the methods of the class
+	            and values are the desired result for that method 
+
+
+	test(
+		'get_data', [string]
+		$test_data : [array]
+		'assertion' : [string]
+		);	
