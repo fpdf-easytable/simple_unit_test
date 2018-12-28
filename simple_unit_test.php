@@ -34,6 +34,9 @@ abstract class Unit_Test{
 	}
 
 	public static function SET_URL($_url=null){
+		if(!$_url){
+			die("Please set a URL for this project");
+		}
 		self::$url=$_url;
 	}
 
