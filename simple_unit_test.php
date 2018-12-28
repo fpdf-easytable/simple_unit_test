@@ -13,7 +13,6 @@ error_reporting(E_ALL);
 define('TIMEOUT', 30);
 
 abstract class Unit_Test{
-
 	private static function outPut(){
 		$response=json_encode(self::$response, true);
 		ob_clean();
@@ -280,41 +279,42 @@ abstract class Unit_Test{
 					$dummy_class.=$c[$i];
 					if(strpos($c[$i], '{')===false){
 						$dummy_class.='{';
-						}
-						$dummy_class.=$post_data['dummies'][$mtd_names[$i]].";\n}";
-						$i=$mm[$k+1];
 					}
-					else{
-						for($i=$mm[$k]; $i<=$mm[$k+1]; $i++) {
-							$dummy_class.=$c[$i] . "";
-						}
-						$i--;
-					}
-					$k+=2;
+					$dummy_class.=$post_data['dummies'][$mtd_names[$i]].";\n}";
+					$i=$mm[$k+1];
 				}
+				else{
+					for($i=$mm[$k]; $i<=$mm[$k+1]; $i++) {
+						$dummy_class.=$c[$i] . "";
+					}
+					$i--;
+				}
+				$k+=2;
 			}
-			return $dummy_class;
 		}
-		public static function dummy_loader($class, $_data=null){
-			static $autoloader='';
-			static $dummy_list=array();
-			if($_data){
-				$autoloader=$_data[0];
-				$dummy_list=$_data[1];
-			}
-			if($class!=null){
-				if(in_array($class, $dummy_list) || isset($dummy_list[$class])){
-					$dummy_class='';
-					$post=array(
-					'factory'=>1,
-					'autoload'=>$autoloader,
-					'class'=>$class,
-					'dummies'=>json_encode($dummy_list[$class])
+		return $dummy_class;
+	}
+	public static function dummy_loader($class, $_data=null){
+		static $autoloader='';
+		static $dummy_list=array();
+		if($_data){
+			$autoloader=$_data[0];
+			$dummy_list=$_data[1];
+		}
+		if($class!=null){
+			if(in_array($class, $dummy_list) || isset($dummy_list[$class])){
+				$dummy_class='';
+				$post=array(
+				'factory'=>1,
+				'autoload'=>$autoloader,
+				'class'=>$class,
+				'dummies'=>json_encode($dummy_list[$class])
 				);
+
 				self::curly($post, function($ch) use(&$dummy_class){
-				$raw_response=curl_exec($ch);
-				if(curl_errno($ch)==0 ){
-					$status_code=curl_getinfo($ch, CURLINFO_HTTP_CODE);
+					$raw_response=curl_exec($ch);
+					if(curl_errno($ch)==0 ){
+						$status_code=curl_getinfo($ch, CURLINFO_HTTP_CODE);
 						$response=explode("\r\n\r\n", $raw_response);
 						$n=count($response)-1;
 						$dummy_class=trim($response[$n]);
@@ -337,10 +337,12 @@ class Test extends Unit_Test{
 		return print_results($this->result, $this->meta);
 	}
 }
+
 if(count($_POST)){
 	if(isset($_POST['unit_test'])){
 
 		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error');
+		set_error_handler('SimpleUnitTest\Test::Fatal_Error', E_ALL);
 		set_exception_handler('SimpleUnitTest\Test::Uncaught_Exception');
 		Test::run_test();
 		exit;

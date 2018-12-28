@@ -167,7 +167,7 @@ set_up
                                 'autoload'=>'class_loader2',
                                 'prepend'=>false, 
                                 'dummies'=>array('WebService\\WebRegister'=>array('send'=>'return true')))
-			)
+        )
     );
 ```
 
