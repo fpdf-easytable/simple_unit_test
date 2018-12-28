@@ -1,10 +1,10 @@
 # Simple Unit Test
 
-Simple Unit Test is a php class to test php code. The test Why over http? It is highly 
+Simple Unit Test is a php class to test php code. Why over http? It is highly 
 probably you are developing a web application, therefore server configuration is a 
 criteria to be considered.
 
-More than attempt to be an exhaustive unit test, Simple Unit Test is a proof of the concept.
+More than an attempt to be an exhaustive unit test, Simple Unit Test is a proof of the concept.
 The concept that testing should be simple, straight forward and automatic.
 
 
@@ -30,7 +30,7 @@ does not use the relevant test cases his program, it does not matter if he is us
 the super fancy unit test out there to do the test or the "can you hear me?" approach, 
 he will still get valid data with the wrong test. 
 
-#Comparisons
+# Comparisons
 
 Suppose we have a class HelloWorld
 
