@@ -85,6 +85,7 @@ File 3 (the "test")
         {
             $connObj = new HelloWorld();
             $this->assertTrue($connObj->sayhi() == 'Hello World');
+            $this->assertTrue($connObj->sayhi('abc') == 'Hello World');
         }
     }
     ?>
@@ -133,30 +134,72 @@ Just one file
 
 # Documentation
 
+**function __construct ( string $class, array $set_up)**
 
-	new Test('ClassName',
-				array(
-						'constructor_params'=>array,
-						'autoload'=>string,
-						'prepend'=>false, 
-						'dummies'=>array
-			)
-	)
-	
-	'ClassName': string, it shuld set as it needs to be called (including namespace path if needed)	
+*Description*
+
+class
+
+    the name of the class (fully qualified name) to be tested
+    
+set_up
+
+   associative array 
+					'constructor_params'=>array,
+					'autoload'=>string,
+					'prepend'=>false, 
+					'dummies'=>array
 	'construnctor_params': [array/mix] of the parameters use to instantiate the object
 								if not arguments then empty array can be passed
 								if just one argument is needed, the this can be passed instead of array
 	'autoload': [string] callable function to be used to load your classes needed
-	'prepend': [bool] parameter pass to spl_autoload_register
-	'dummies': [array] define which classes and method will be alterated.
+	'prepend': [bool] (optional) parameter pass to spl_autoload_register
+	'dummies': [array] (optional) define which classes and method will be alterated.
 	            It is an key/values array where the keys are the name of the 
 	            clases(full qualified names) and values are array of the methods of the class
 	            and values are the desired result for that method 
 
+*Example*
 
-	test(
-		'get_data', [string]
-		$test_data : [array]
-		'assertion' : [string]
-		);	
+```
+    $Test=new Test('Demo', array(
+                                'constructor_params'=>array(),
+                                'autoload'=>'class_loader2',
+                                'prepend'=>false, 
+                                'dummies'=>array('Helper'=>array('get_name'=>2))
+			)
+    );
+```
+
+**function test(string $method, array $test_data, string $assertion=null)**
+
+*Description*
+
+   Set the method and parameters for the test
+
+*Parameters*	
+
+method
+
+    the name of the class method to be tested
+
+test_data
+
+    associative array 
+    	 array(
+         'name of the test'=>array(
+         						array of parameters,
+         						expected value
+         						)
+	    );
+    
+assertion
+
+    name of a callable function to be used to assert the result of the method
+		
+*Example*
+
+```
+    
+```		
+		
