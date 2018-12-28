@@ -144,17 +144,17 @@ class
     
 set_up
 
-   associative array 
+    associative array 
 					'constructor_params'=>array,
 					'autoload'=>string,
 					'prepend'=>false, 
 					'dummies'=>array
-	'construnctor_params': [array/mix] of the parameters use to instantiate the object
+    'construnctor_params': [array/mix] of the parameters use to instantiate the object
 								if not arguments then empty array can be passed
 								if just one argument is needed, the this can be passed instead of array
-	'autoload': [string] callable function to be used to load your classes needed
-	'prepend': [bool] (optional) parameter pass to spl_autoload_register
-	'dummies': [array] (optional) define which classes and method will be alterated.
+    'autoload': [string] callable function to be used to load your classes needed
+    'prepend': [bool] (optional) parameter pass to spl_autoload_register
+    'dummies': [array] (optional) define which classes and method will be alterated.
 	            It is an key/values array where the keys are the name of the 
 	            clases(full qualified names) and values are array of the methods of the class
 	            and values are the desired result for that method 
@@ -166,7 +166,7 @@ set_up
                                 'constructor_params'=>array(),
                                 'autoload'=>'class_loader2',
                                 'prepend'=>false, 
-                                'dummies'=>array('Helper'=>array('get_name'=>2))
+                                'dummies'=>array('WebService\\WebRegister'=>array('send'=>'return true')))
 			)
     );
 ```
@@ -200,6 +200,12 @@ assertion
 *Example*
 
 ```
+    function assertion($x, $y){
+        return $x===$y;
+    }
+
+    $Test->test('connectToServer', 
+             array('Test1'=>array(array('www.google.co.uk'),true)), 'assertion');
     
 ```		
 		
