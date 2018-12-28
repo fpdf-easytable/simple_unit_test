@@ -24,7 +24,8 @@ right!
 The general point is not about areas. The point is that unless we have some idea of 
 what a correct answer will be like, we don't have a clue whether our result is reasonable.
 
-Does a unit test help to develop better code? Not really, the bottom line is that the code 
+Does a unit test help to develop better code? Not really, bad code can be tested with 
+the wrong test cases and still passes the test. The bottom line is that the code 
 and the test cases depend on the skills of the developer. In other words, as far as one
 does not use the relevant test cases his program, it does not matter if he is using 
 the super fancy unit test out there to do the test or the "can you hear me?" approach, 
@@ -195,17 +196,84 @@ test_data
     
 assertion
 
-    name of a callable function to be used to assert the result of the method
+    name of a callable function to be used to assert the result of the method. If it is 
+    omitted, the assertion is via "result==expected_value".
 		
 *Example*
 
 ```
-    function assertion($x, $y){
-        return $x===$y;
+    function assertion($result, $expected){
+        return $result===$expected;
     }
 
     $Test->test('connectToServer', 
-             array('Test1'=>array(array('www.google.co.uk'),true)), 'assertion');
+             array('Test1'=>array(array('www.example.com'),true)), 'assertion');
     
 ```		
+*Other examples of assertions*
+
+```
+    function assertion($result, $expected){
+       return in_array($result, $expected);
+    }
+    
+    function assertion($result, $expected){
+       return $result<$expected;
+    }
+
+	function assertion($result, $expected){
+		return whatever-you-want!
+	}    
+```
+
+# How to use it
+
+1. set the following lines in your test suit
+
+    include 'simple_unit_test.php';
+    use SimpleUnitTest\Test;
+    Test::Set_URL('URL/of/your/test-suit');
+    include 'header.html.php';
+
+2. create a Test object
+
+    $Test=new Test('Demo', array(
+                     'constructor_params'=>array(of-parameters),
+                     'autoload'=>'my_autoloader',
+                     'prepend'=>false, 
+                     'dummies'=>array('someclass'=>array(
+                     			'somemethod1'=>'new-code-for-the-method'),
+                     			'somemethod2'=>'new-code-for-the-method')
+                     			),
+                     			'anotherclass'=>array(
+                     			'someothermethod1'=>'new-code-for-the-method'),
+                     			'someothermethod2'=>'new-code-for-the-method')
+                     			)
+							)
+    );
+
+3. set the relevant test cases
+```
+    $test_method1=array(
+               'Test1'=>array(array(arguments), expected),
+               'Test2'=>array(array(arguments), expected),
+    );
+    $Test->test('Some_Method', $test_method1);
+
+    // you can carry on settings other tests for other methods
+    
+    $test_method2=array(
+               'Test1'=>array(array(arguments), expected),
+               'Test2'=>array(array(arguments), expected),
+    );
+    $Test->test('Some_Method2', $test_method2);
+```
+
+4. when you are done setting your test cases for all the methods of your class you want to
+test, run the test
+```
+    echo $Test->print_results();
+```
+
+
 		
