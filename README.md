@@ -326,7 +326,6 @@ include 'simple_unit_test.php';
 use SimpleUnitTest\Test;
 Test::Set_URL('http://localhost/UnitTest/demo.php');
 include 'header.html.php';
-//====================================================================
 
 // define a function to load the classes we need
 
@@ -364,9 +363,10 @@ echo $Test->print_results();
 // end file
 //=========================================================
 
-
 ```
+* Result:
 
+![Example1](http://212.67.221.142/img/exemple1.png)
 
 
 
