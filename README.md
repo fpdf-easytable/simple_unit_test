@@ -281,6 +281,8 @@ test, run the test
 
 *Example 1.
 ```
+// file: demo_class.php
+<?php
 class Demo {
 	
    private $name, $last_name, $age, $data;
@@ -313,6 +315,55 @@ class Demo {
 		fclose($h);
 	}
 }
+?>
+//end of file
+
+//=========================================================
+
+// test suit for Demo class
+<?php
+include 'simple_unit_test.php';
+use SimpleUnitTest\Test;
+Test::Set_URL('http://localhost/UnitTest/demo.php');
+include 'header.html.php';
+//====================================================================
+
+// define a function to load the classes we need
+
+function class_loader2($class){
+	$base=strtolower($class);
+	$base.='_class.php';
+	$class='Demo_class/'.$base;
+	if(file_exists($class)){		
+		include_once $class;
+	}	
+}
+
+ 
+$Test=new Test('Demo', array(
+				'autoload'=>'class_loader2',
+				'prepend'=>false, 
+			)
+);
+
+$test_data=array(
+	'Test1'=>array(array('name'), 'Elephant'),
+	'Test2'=>array(array('size'), 'Very big'),
+	'Test3'=>array(array('weight'), 'Heavy'),
+	'Test4'=>array(array('age'), 4),	
+);
+$Test->test('get_data', $test_data);
+
+$test_data=array(
+	'Test1'=>array(array(null),null)
+	);
+$Test->test('print_to_file', $test_data);
+echo $Test->print_results();
+?>
+
+// end file
+//=========================================================
+
 
 ```
 

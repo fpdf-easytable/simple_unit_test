@@ -41,10 +41,11 @@ $test_data=array(
 	'Test1'=>array(array(null),null)
 	);
 $Test->test('print_to_file', $test_data);
+
 echo $Test->print_results();
 
 //####################################################################
-//*
+/*
 $Test=new Test('Wrapper', array(
 				'constructor_params'=>array(),
 				'autoload'=>'class_loader2',
@@ -62,7 +63,7 @@ echo $Test->print_results();
 //####################################################################
 //####################################################################
 //####################################################################
-// *
+/*
 $Test=new Test('RemoteConnect', array(
 				'constructor_params'=>array(),
 				'autoload'=>'class_loader2',
@@ -122,7 +123,7 @@ function calculator_autoloader($name) {
 
 //--------------------------------------------------------------------
 
-//*
+/*
 
 $Test=new Test('Math\Calculator',array(
 				'constructor_params'=>array(),
@@ -143,7 +144,7 @@ echo $Test->print_results();
 /**/
 //####################################################################
 //####################################################################
-//*
+/*
 
 spl_autoload_register('calculator_autoloader');
 

@@ -23,7 +23,7 @@ class Demo {
 	
 	public function get_old(){
 		$this->age++;
-		return $this->age;
+		//return $this->age;
 	}
 	
 	
