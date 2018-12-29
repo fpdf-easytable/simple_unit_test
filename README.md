@@ -27,7 +27,7 @@ what a correct answer will be like, we don't have a clue whether our result is r
 Does a unit test help to develop better code? Not really, bad code can be tested with 
 the wrong test cases and still passes the test. The bottom line is that the code 
 and the test cases depend on the skills of the developer. In other words, as far as one
-does not use the relevant test cases his program, it does not matter if he is using 
+does not use the relevant test cases to test his program, it does not matter if he is using 
 the super fancy unit test out there to do the test or the "can you hear me?" approach, 
 he will still get valid data with the wrong test. 
 
@@ -235,6 +235,7 @@ assertion
     Test::Set_URL('URL/of/your/test-suit');
     include 'header.html.php';
 ```
+
 2. create a Test object
 ```
     $Test=new Test('Demo', array(
@@ -252,6 +253,7 @@ assertion
 							)
     );
 ```
+
 3. set the relevant test cases
 ```
     $test_method1=array(
@@ -275,5 +277,45 @@ test, run the test
     echo $Test->print_results();
 ```
 
+# Examples
 
-		
+*Example 1.
+```
+class Demo {
+	
+   private $name, $last_name, $age, $data;
+	public function __construct(){
+		$this->name='Elephant';
+		$this->size='Very big';
+		$this->weight='Very heavy';
+		$this->age=0;
+		$this->data=new Helper('Hola');
+	}
+	
+	public function get_data($str){
+		$this->get_old();
+		if(isset($this->$str)){
+			return $this->$str;
+		}
+		else{
+			return false;
+		}
+	}
+	
+	public function get_old(){
+		$this->age++;
+		return $this->age;
+	}
+
+	public function print_to_file(){
+		$h=fopen('/tmp/zzzz_demo', 'w');
+		fwrite($h, var_export($this, true));
+		fclose($h);
+	}
+}
+
+```
+
+
+
+

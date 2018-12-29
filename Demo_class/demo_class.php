@@ -23,7 +23,10 @@ class Demo {
 	
 	public function get_old(){
 		$this->age++;
+		return $this->age;
 	}
+	
+	
 
 	public function print_to_file(){
 		$h=fopen('/tmp/zzzz_demo', 'w');
