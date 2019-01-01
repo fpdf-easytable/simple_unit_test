@@ -112,9 +112,9 @@ Just one file
 
     //Test
     $Test->test('sayhi', [
-	   						     ['Test1', 'Hello World!'],
-   	   						  ['Test2', 'Hello World!', 'dfdf'],
-								    ]
+            ['Test1', 'Hello World!'],
+            ['Test2', 'Hello World!', 'dfdf'],
+         ]
     );
 
     // Get and Print results
