@@ -21,40 +21,34 @@ function class_loader2($class){
 
 //====================================================================
 
-//*
-$Test=new Test('Demo', array(
-				'autoload'=>'class_loader2',
-				'prepend'=>false, 
-				'dummies'=>array('Helper'=>array('get_name'=>2))
-			)
-);
-
-$test_data=array(
-	'Test1'=>array(array('name'), 'Elephant'),
-	'Test2'=>array(array('size'), 'Very big'),
-	'Test3'=>array(array('weight'), 'Heavy'),
-	'Test4'=>array(array('age'), 4),	
-);
+/*
+$Test=new Test('Demo');
+$Test->autoload('class_loader2');
+$test_data=[
+	['Test1', 'Elephant', 'name'],
+	['Test2', 'Very big', 'size'],
+	['Test3', 'Heavy', 'weight'],
+	['Test4', 4, 'age'],	
+];
 $Test->test('get_data', $test_data);
 
-$test_data=array(
-	'Test1'=>array(array(null),null)
-	);
+$test_data=[['Test1', null]];
 $Test->test('print_to_file', $test_data);
 
 echo $Test->print_results();
 
 //####################################################################
 /*
-$Test=new Test('Wrapper', array(
-				'constructor_params'=>array(),
-				'autoload'=>'class_loader2',
-	)
-);
+If you want to test functions wrap them in a class
+*/
+/*
 
-$test_data=array(
-	'Test1'=>array(array(null),'Hello world')
-	);
+$Test=new Test('Wrapper');
+$Test->autoload('class_loader2');
+$test_data=[
+	['Test1', 'Hello world']
+];
+
 $Test->test('say_hello', $test_data);
 echo $Test->print_results();
 
@@ -64,22 +58,22 @@ echo $Test->print_results();
 //####################################################################
 //####################################################################
 /*
-$Test=new Test('RemoteConnect', array(
-				'constructor_params'=>array(),
-				'autoload'=>'class_loader2',
-			));
+$Test=new Test('RemoteConnect');
+$Test->autoload('class_loader2');
 
-$test_data=array(
-	'Test1'=>array(array('www.google.co.uk'),true)
-	);
+$test_data=[
+	['Test1', true, 'www.google.co.uk']
+];
+
 function assertion($x, $y){
 	return $x===$y;
 }
 $Test->test('connectToServer', $test_data, 'assertion');
 echo $Test->print_results();
+/**/
 
 //####################################################################
-
+/*
 function class_loader($class){
 	$base='phpunit_example/src/';
 	$base.="{$class}.php";
@@ -89,18 +83,16 @@ function class_loader($class){
 	}
 }
 
-$Test=new Test('Abc\\Def\\Ghi\\Number',array(
-				'constructor_params'=>array(34),
-				'autoload'=>'class_loader',
-			)
-		);
 
-$test_data=array(
-	'Test3'=>array(array('weight'), 'Heavy'),
-	'Test1'=>array(array(4), 136),
-	'Test2'=>array(array(-4), 30),
-	
-);
+$Test=new Test('Abc\\Def\\Ghi\\Number',34);
+$Test->autoload('class_loader');
+
+$test_data=[
+	['Test3', 'Heavy', 'weight'],
+	['Test1', 136, 4],
+	['Test2', 30, -4],
+];
+
 $Test->test('multiply', $test_data);
 echo $Test->print_results();
 
@@ -113,11 +105,8 @@ echo $Test->print_results();
 
 function calculator_autoloader($name) {
     $name = str_replace('\\', '/', $name) . '.php';
-    // Try to load class from src dir
     $srcPath = __DIR__ . '/src/' . $name;
     if (is_file($srcPath)) include_once $srcPath;
-   
-    // Load the class from tests dir otherwise
     else include_once __DIR__ . '/' . $name;
 }
 
@@ -125,66 +114,101 @@ function calculator_autoloader($name) {
 
 /*
 
-$Test=new Test('Math\Calculator',array(
-				'constructor_params'=>array(),
-				'autoload'=>'calculator_autoloader',
-			)
-);
+$Test=new Test('Math\Calculator');
+$Test->autoload('calculator_autoloader');
 
-$test_data=array(
-	//'Test3'=>array(array('weight'), 'Heavy'),
-	'Test1'=>array(array(4, 2), 2),
-	'Test2'=>array(array(-4,0), -2),
-	
-);
+$test_data=[
+	['Test1', 2, 4, 2],
+	['Test2', -2, -4, 0],
+];
 
 $Test->test('divide', $test_data);
 echo $Test->print_results();
+
 
 /**/
 //####################################################################
 //####################################################################
 /*
+The constructor of Calculator2 has a parameter a web service object
+that require certain time to execute. However we can redefine
+that object so we do not wait.
+*/
+/*
 
 spl_autoload_register('calculator_autoloader');
 
-$rgtr=new WebService\WebRegister();
+$rgtr=new WebService\WebRegister(4);
 
-//echo serialize($rgtr);
+function nwait(){
+	sleep(0);
+}
 
-$Test=new Test('Math\Calculator2',array(
-				'constructor_params'=>array($rgtr),
-				'autoload'=>'calculator_autoloader',
-				)			
-);
+$Test=new Test('Math\Calculator2',$rgtr);
+$Test->autoload('calculator_autoloader');
+$Test->add_dummies('WebService\WebRegister', ['send'=>'nwait']);			
 
-$test_data=array(
-	'Test3'=>array(array('weight', 45), 'Heavy'),
-	'Test1'=>array(array(4, 2), 2),
-	'Test2'=>array(array(-4,0), -2),	
-);
 
-$result=$Test->test('multiply', $test_data);
+$test_data=[
+	['Test3', 'Heavy', 'weight', 45],
+	['Test1', 8, 4, 2],
+	['Test2', -2, -4,0]
+];
+
+$Test->test('multiply', $test_data);
 echo $Test->print_results();
 
+/**/
 //####################################################################
-//*
+/*
 
-$Test=new Test('Math\Calculator_wrapper', array(
-				'constructor_params'=>array(),
-				'autoload'=>'calculator_autoloader',
-				'dummies'=>array('WebService\\WebRegister'=>array('send'=>'true'))
-			));
+function nsend(){
+	return true;
+}
 
-$test_data=array(
-	'Test1'=>array(array(4, 2), 2),
-	'Test2'=>array(array(4, 0), 2),
-	);
+$Test=new Test('Math\Calculator_wrapper');
+$Test->autoload('calculator_autoloader');
+//$Test->add_dummies('Math\Calculator2', ['divide'=>'return $number1+$number2;'], 'WebService\WebRegister');
+$Test->add_dummies('WebService\WebRegister', ['send'=>'nsend']);
+
+$test_data=[
+	['Test1', 2, 4, 2],
+	['Test2', 2, 4, 0]
+];
+
 $Test->test('divide', $test_data);
 echo $Test->print_results();
 /**/
 
 //####################################################################
+
+
+function tt(){
+	static $a=0;
+	$b=[12,16,22,24];
+	$c=$a;
+	$a++;
+	return $b[$c];
+}
+
+function tt2(){
+	return 'NaN';
+}
+
+$Test=new Test('Math\CalculatorZ');
+$Test->autoload('calculator_autoloader');
+$Test->add_dummies('Math\CalculatorZ', ['getNumberFromUserInput'=>'tt', 
+'printToScreen'=>'tt2']);
+
+$test_data=[
+	['DivideByPositive', 2, 6],
+	['DivideByPositive2', 2, 8],
+	['DivideByZero', NAN, 0],
+];
+$Test->test('divideBy', $test_data);
+echo $Test->print_results();
+
+
 //####################################################################
 
 include 'footer.html';

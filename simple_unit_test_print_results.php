@@ -12,8 +12,7 @@ function print_results(&$results, $meta){
 	if(isset($result['Method']) && isset($result['Tests'])){
 		$html='<table class="simple_test_result" >
 		<tr style="height:4em;"><td colspan="8"><b>Class: </b>'. $meta['Class'] . '
-		<br/>Parameters: ' . $meta['Parameters'] . '<br/>
-		Dummies: ' . var_export($meta['Dummies'],true) . '</td></tr>';
+		<br/>Parameters: ' . $meta['Parameters'] . '<br/>';
 		foreach($results as $result){
 			$html.='<tr style="height:3em;"><td colspan="8"><b>Method: </b>' .$result['Method'] . '
 			<b>Number of tests: </b>'. count($result['Tests']) . '</td></tr>';

@@ -107,17 +107,14 @@ Just one file
     }
 
     // Instantiate a new Test object
-    $Test=new Test('HelloWorld',array(
-									'constructor_params'=>array(),
-									'autoload'=>'autoloader',
-								)
-    );
+    $Test=new Test('HelloWorld');
+    $Test->autoload('autoloader');
 
     //Test
-    $Test->test('sayhi', array(
-	   						     'Test1'=>array(array(), 'Hello World!'),
-   	   						  'Test2'=>array(array('dfdf'), 'Hello World!'),
-								    )
+    $Test->test('sayhi', [
+	   						     ['Test1', 'Hello World!'],
+   	   						  ['Test2', 'Hello World!', 'dfdf'],
+								    ]
     );
 
     // Get and Print results
@@ -135,42 +132,67 @@ Just one file
 
 # Documentation
 
-**function __construct ( string $class, array $set_up)**
+**function __construct ( string $class)**
 
 *Description*
 
 class
 
     the name of the class (fully qualified name) to be tested
-    
-set_up
 
-    associative array 
-					'constructor_params'=>array,
-					'autoload'=>string,
-					'prepend'=>false, 
-					'dummies'=>array
-    'construnctor_params': [array/mix] of the parameters use to instantiate the object
-								if not arguments then empty array can be passed
-								if just one argument is needed, the this can be passed instead of array
-    'autoload': [string] callable function to be used to load your classes needed
-    'prepend': [bool] (optional) parameter pass to spl_autoload_register
-    'dummies': [array] (optional) define which classes and method will be alterated.
-	            It is an key/values array where the keys are the name of the 
-	            clases(full qualified names) and values are array of the methods of the class
-	            and values are the desired result for that method 
+**function autoload( string $autoload, bool $prepend=false) 
+
+*Description*
+
+    set the parameter for spl_autoload_register
+
+*Parameters*
+
+autoload
+
+    callable function to be used to load your classes as they are needed
+
+prepend
+
+    parameter pass to spl_autoload_register
+
+**function add_dummies(string $class_name, array $methods, string $use_namespace=null)
+
+*Description*
+
+    the methods of the classes that we want to overwrite
+
+*Parameters*
+
+class_name    
+
+    the full qualified name of the class where you want to use dummies methods
+
+methods
+
+    associative array where the keys are the name of the method (of the class specified
+    in the first argument) and values are the name of callable functions to be use
+    as sustitution for those methods.
+
+use_namespace
+
+	string of semi-colon separated namespaces needed as in the definition of the class
+	class_name
 
 *Example*
 
 ```
-    $Test=new Test('Demo', array(
-                                'constructor_params'=>array(),
-                                'autoload'=>'class_loader2',
-                                'prepend'=>false, 
-                                'dummies'=>array('WebService\\WebRegister'=>array('send'=>'return true')))
-        )
-    );
+    function dummy_send(some-parameters){
+       //some code
+    }
+
+    $Test->add_dummies('WebService\\WebRegister', ['send'=>'dummy_send']);
 ```
+**_Note_**
+    1) the parameters use for the callback function are the same of the original definition of
+    the method.
+    2) add_dummies method can be called as many times as needed in order to add more classes
+    and methods
 
 **function test(string $method, array $test_data, string $assertion=null)**
 
@@ -186,13 +208,15 @@ method
 
 test_data
 
-    associative array 
-    	 array(
-         'name of the test'=>array(
-         						array of parameters,
-         						expected value
-         						)
-	    );
+    array of associative arrays each associative array should contain:
+    name for the test, expected result, the parametes to be passed to the method to be tested
+    
+*Example*
+    	 [
+           ['Test1', some_result, 1,2,3,a,b,c],
+           ['Test2', some_result2, 1,2,3,a],
+           ['Test3', some_result3, 1,2,3,e,f,g],
+        ];
     
 assertion
 
@@ -200,7 +224,6 @@ assertion
     omitted, the assertion is via "result==expected_value".
 		
 *Example*
-
 ```
     function assertion($result, $expected){
         return $result===$expected;
@@ -238,28 +261,29 @@ assertion
 
 2. create a Test object
 ```
-    $Test=new Test('Demo', array(
-                     'constructor_params'=>array(of-parameters),
-                     'autoload'=>'my_autoloader',
-                     'prepend'=>false, 
-                     'dummies'=>array('someclass'=>array(
-                     			'somemethod1'=>'new-code-for-the-method'),
-                     			'somemethod2'=>'new-code-for-the-method')
-                     			),
-                     			'anotherclass'=>array(
-                     			'someothermethod1'=>'new-code-for-the-method'),
-                     			'someothermethod2'=>'new-code-for-the-method')
-                     			)
-							)
-    );
+    $Test=new Test('Demo', constructor-parameters-if-any);
+``
+
+3. add autoload and dummies if needed
+```
+    $Test->autoload('my_autoloader','prepend');
+    $Test->add_dummies('someclass',array(
+                     			'somemethod1'=>'new-code-for-the-method',
+                     			'somemethod2'=>'new-code-for-the-method'
+                     			));
+    $Test->add_dummies('someotherclass',array(
+                     			'someothermethod1'=>'new-code-for-the-method',
+                     			'someothermethod2'=>'new-code-for-the-method'
+                     			));                     			
 ```
 
-3. set the relevant test cases
+4. set the relevant test cases
 ```
-    $test_method1=array(
-               'Test1'=>array(array(arguments), expected),
-               'Test2'=>array(array(arguments), expected),
-    );
+    $test_method1=[
+               ['Test1',expected, rest-of-arguments], // coma separated
+               ['Test2', expected, rest-of-arguments]
+    ];
+
     $Test->test('Some_Method', $test_method1);
 
     // you can carry on settings other tests for other methods
@@ -271,7 +295,7 @@ assertion
     $Test->test('Some_Method2', $test_method2);
 ```
 
-4. when you are done setting your test cases for all the methods of your class you want to
+5. when you are done setting your test cases for all the methods of your class you want to
 test, run the test
 ```
     echo $Test->print_results();
@@ -338,25 +362,19 @@ function class_loader2($class){
 	}	
 }
 
- 
-$Test=new Test('Demo', array(
-				'autoload'=>'class_loader2',
-				'prepend'=>false, 
-			)
-);
-
-$test_data=array(
-	'Test1'=>array(array('name'), 'Elephant'),
-	'Test2'=>array(array('size'), 'Very big'),
-	'Test3'=>array(array('weight'), 'Heavy'),
-	'Test4'=>array(array('age'), 4),	
-);
+$Test=new Test('Demo');
+$Test->autoload('class_loader2');
+$test_data=[
+	['Test1', 'Elephant', 'name'],
+	['Test2', 'Very big', 'size'],
+	['Test3', 'Heavy', 'weight'],
+	['Test4', 4, 'age'],	
+];
 $Test->test('get_data', $test_data);
 
-$test_data=array(
-	'Test1'=>array(array(null),null)
-	);
+$test_data=[['Test1', null]];
 $Test->test('print_to_file', $test_data);
+
 echo $Test->print_results();
 ?>
 

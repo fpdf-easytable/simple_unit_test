@@ -13,27 +13,9 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 define('TIMEOUT', 30);
 
-/*
-function debugging($str){
-	$h=fopen('/tmp/zxzxzxzxz_debugging', 'a');
-	fwrite($h, var_export($str, true));
-	fwrite($h, "\n###########################################################\n\n");
-	fclose($h);
-}
-/**/
-
 abstract class Unit_Test{
-	/*
-	static public function debugging($str){
-		$h=fopen('/tmp/zxzxzxzxz_debugging', 'a');
-		fwrite($h, var_export($str, true));
-		fwrite($h, "\n###########################################################\n\n");
-		fclose($h);
-	}
-	/**/
-
 	private static function outPut(){
-		$response=json_encode(self::$response, true);
+		$response=json_encode(self::$response, JSON_PRESERVE_ZERO_FRACTION);
 		ob_clean();
 		ob_start();
 		header('Content-Type: application/json');
@@ -52,7 +34,6 @@ abstract class Unit_Test{
 		return $formated_error;
 	}
 
-
 	public static function SET_URL($_url=null){
 		if(!$_url){
 			die("Please set a URL for this project");
@@ -61,9 +42,7 @@ abstract class Unit_Test{
 	}
 
 	public static function Uncaught_Exception($exception){
-		
 		$err=$exception->getMessage();
-		//debugging($err);//error_get_last());
 		self::$response['Errors'][]=array(
 						'ErrorCode'=>4096,
 						'Message'=>$err, 
@@ -76,10 +55,8 @@ abstract class Unit_Test{
 	}
 	
 	private static $response=array('Errors'=>array());
-
 	
 	function __destruct(){
-		//debugging($this->result);
 		self::Fatal_Error();
 	}
 
@@ -106,7 +83,6 @@ abstract class Unit_Test{
 			);
 			if(!headers_sent() && isset($error_codes[$error['type']])) {
 				self::$response['Errors'][]=array('ErrorCode'=>$error['type'],'Message'=>self::formated_error($error));			
-				//self::$response['Errors'][]=$error;			
 			}
 			else{
 				self::$response['Errors'][]=array('ErrorCode'=>'UNKNOWN ERROR','Message'=>self::formated_error($error));
@@ -114,18 +90,15 @@ abstract class Unit_Test{
 			
 			self::outPut();
 		}
-		//debugging($error);
 	}
 
 
 	public static function curly($post, $f){
-		
 		$curl_options=array(
 				CURLOPT_URL => self::$url,
-				//CURLOPT_FOLLOWLOCATION=>true,
 				CURLOPT_RETURNTRANSFER=>true,
-				CURLOPT_ENCODING=>"", // to accept all supported encoding types
-				CURLOPT_TIMEOUT=>TIMEOUT,  // in seconds
+				CURLOPT_ENCODING=>"", 
+				CURLOPT_TIMEOUT=>TIMEOUT,
 				CURLOPT_POST=>1
 			  );
 
@@ -135,24 +108,16 @@ abstract class Unit_Test{
 		$f($ch);
 	}
 
-
-/*
-test(
-	$method : string the name of the method to test
-	$test_data : array array('Name of the test'=>array(array_of_parameters_of_methods, mixed expected_result)
-	$assertion : opt callable_assertion_function_to_be_used_to_assert_result
-)
-
-*/
-
 	public function test($method, array $test_data, $assertion=null){
-		$this->data['method']=$method;		
-		$this->data['test_data']=$test_data;
-		$this->data['assertion']=$assertion;
-		$this->data['url']=self::$url;
-		$this->data['object_instance']=$this->object_instance;
-		
-		self::curly(array('unit_test'=>1,'data'=>json_encode($this->data)), function($ch){
+		$post['method']=$method;	
+		$post['test_data']=$test_data;
+		$post['assertion']=$assertion;
+		$post['url']=self::$url;
+		$post['object_instance']=&$this->object_instance;
+		$post['meta']=$this->_meta;
+		$post['dummies']=$this->_dummies;
+		$post['autoload']=$this->_autoload;
+		self::curly(array('unit_test'=>1,'data'=>serialize($post)), function($ch){
 			$result=array('ResponseCode'=>500,'Message'=>'');
 			$raw_response=curl_exec($ch);
 		
@@ -178,71 +143,66 @@ test(
 				unset($result['object_instance']);
 			}
 			$this->result[]=$result;//['results'];
-			//debugging($result);
 		});
 	}
-	
 	
 	abstract public function print_results();
 
 	private $data;
 	private static $url;
+	protected $meta;
 
-/*
-new Test(
-$class : string the name of the class to test
-$set_up : array(
-				'constructor_params'=>array(), //
-				'autoload'=>'class_loader2', //callable name of the function to be use by autoloader
-				'prepend'=>false, // parameter for autoloader
-				'dummies'=>array('class_name'=>array('method_name'=>"return_value"))
-		
-example:
-'Demo', array(
-				'constructor_params'=>serialize(array()),
-				'autoload'=>'class_loader2',
-				'prepend'=>false, 
-				'dummies'=>array('Helper'=>array('get_name'=>"'Horacio'"))
-
-*/
-
-	public function __construct($class, $set_up){//array $constructor_param, $autoload_function=null,  $prepend=false){
-		$this->meta=array('Class'=>$class, 'Parameters'=>'', 'Dummies'=>'');
-		try{
-			$this->object_instance='';
-			$this->data=$set_up;//
-			if(!isset($this->data['prepend'])){
-				$this->data['prepend']=false;
-			}
-			if(!isset($this->data['constructor_params'])){
-				$this->data['constructor_params']=array();
-			}
-			if(!is_array($this->data['constructor_params'])){
-				$this->data['constructor_params']=array($this->data['constructor_params']);
-			}
-			foreach($this->data['constructor_params'] as $par){
-				$this->meta['Parameters'].=var_export($par, true) . ' | ';
-			}
-			$this->meta['Parameters']=trim($this->meta['Parameters'],' |');
-		
-			$this->data['constructor_params']=serialize($this->data['constructor_params']);
-			$this->data['class']=$class;
-			if(isset($this->data['dummies'])){
-				foreach($this->data['dummies'] as $cls=>$mds){
-					foreach($mds as $k=>$v){
-						$this->data['dummies'][$cls][$k]=$v;//serialize($v);
-					}
-				}
+	public function __construct(){
+		$params=func_get_args();
+		$this->_meta=[
+					'Class'=>array_shift($params), 
+					'Parameters'=>$params,
+					];
+		$this->meta=$this->_meta;
+		$this->meta['Parameters']=implode(' | ', array_map(function($v){
+			if(is_object($v)){
+				return get_class($v);
 			}
 			else{
-				$set_up['dummies']=null;
+				return var_export($v, true);
 			}
-			$this->meta['Dummies']=$set_up['dummies'];
+		},$this->_meta['Parameters']));
+
+		$this->meta['Dummies']=null;
+		$this->_autoload=[false, false];
+		$this->_dummies=[];
+		$this->object_instance='';
+		$this->_meta['Parameters']=serialize($this->_meta['Parameters']);
+	}
+
+	public function autoload($autoload, $prepend=false){
+		$this->_autoload[0]=$autoload;
+		$this->_autoload[1]=(bool)$prepend;
+	}
+
+	public function add_dummies($class_name, $methods, $use_namespace=null){
+		if(!isset($this->_dummies[$class_name])){
+			$this->_dummies[$class_name]=array('methods'=>array());
 		}
-		catch(\Exception $e)
-		{
-			
+		if($use_namespace){
+			$this->_dummies[$class_name]['use_namespace']=$use_namespace;
 		}
+		
+		foreach($methods as $k=>$v){
+			$this->_dummies[$class_name]['methods'][$k]=$v;
+		}
+		$this->meta['Dummies']=$this->_dummies;
+	}
+
+	public static function spy(){
+		$args=func_get_args();
+		$func=array_shift($args);
+		return call_user_func_array($func, $args);
+	}
+
+	public static function sustitution($func){
+		return '$args=func_get_args();
+					return call_user_func_array(\''.$func .'\', $args);';
 	}
 
 	private static function evaluation($x, $y, $assertion=null){
@@ -254,35 +214,41 @@ example:
 		}
 	}
 
+	private static function naninf($result){
+		if(is_infinite($result)){
+			return 'INF';
+		}
+		elseif(is_nan($result)){
+			return 'NAN';
+		}
+		return $result;
+	}
 
 	public static function run_test(){
-		$input=json_decode($_POST['data'], true);
-		
-		//self::$response['Class']=$input['class'];
+		$input=unserialize($_POST['data']);
 		self::$response['Method']=$input['method'];
 		self::$response['Tests']=array();
 		self::$url=$input['url'];
 		if(!isset($input['dummies'])){
 			$input['dummies']=array();
 		}
-		//debugging($input['dummies']);
 		try{
-			if($input['autoload']){
+			if($input['autoload'][0]){
+				
 				self::dummy_loader(null, array($input['autoload'], $input['dummies']));
-				if(!spl_autoload_register('self::dummy_loader', $throw=true, $input['prepend'])){
+				if(!spl_autoload_register('self::dummy_loader', $throw=true, $input['autoload'][1])){
 					throw new \Exception(var_export(error_get_last(), true)); 
 				}
 			}
 			
-			$reflexion_class= new \ReflectionClass($input['class']);	
+			$reflexion_class= new \ReflectionClass($input['meta']['Class']);	
 			
 			if(!$input['object_instance']){
-				$instance_class=$reflexion_class->newInstanceArgs(unserialize($input['constructor_params']));
+				$instance_class=$reflexion_class->newInstanceArgs(unserialize($input['meta']['Parameters']));
 			}
 			else{
 				$instance_class=unserialize($input['object_instance']);
 			}	
-			//debugging($input['class']);//error_get_last());
 
 			if($reflexion_class->hasMethod($input['method'])){
 					
@@ -290,17 +256,11 @@ example:
 				if(!$method_test->isPublic()) {
 					$method_test->setAccessible(true);
 				}
-				//debugging(error_get_last());
 				$etime=0;
-				foreach($input['test_data'] as $test=>$data){
-					///*
-					if(!isset($data[0])){
-						$data[0]=array();
-						$data[1]=null;
-					}
-					elseif(!is_array($data[0])){
-						$data[0]=array($data[0]);
-					}
+				foreach($input['test_data'] as $data){
+					$test=array_shift($data);
+					$expected=array_shift($data);
+					
 					$mstart = memory_get_usage();
 					$etime=microtime(true);
 
@@ -309,15 +269,14 @@ example:
 					$result='n/a';
 					
 					try{
-						$result=$method_test->invokeArgs($instance_class, $data[0]);
-						if(self::evaluation($result,$data[1], $input['assertion'])){
+						$result=$method_test->invokeArgs($instance_class, $data);
+						if(self::evaluation($result, $expected, $input['assertion'])){
 							$status='Passed';
 						}
 						else{
 							$status='Failed';
 						}
 						$wrns=error_get_last();
-						//debugging($wrns);
 						if($wrns){
 							$warnings=self::formated_error($wrns);
 						}
@@ -326,22 +285,19 @@ example:
 						$status='An exception was thrown';
 						$msg=$e->getMessage();
 					}
-					/*
-					we can add more catch blocks 
-					*/
-					
+
 					$etime=microtime(true)-$etime;
 					$mend = memory_get_usage();
 					$mb=sprintf('%.3f',($mend - $mstart) / 1024 / 1024);
 					$params='';
-					foreach($data[0] as $par){
+					foreach($data as $par){
 						$params.=gettype($par) . ': '. var_export($par, true) . ' | ';
 					}
 					$params=trim($params,' ,|');
 					self::$response['Tests'][$test]=array(
 												'Status'=>$status, 
-												'Result'=>$result,
-												'Expected Value'=>$data[1],
+												'Result'=>self::naninf($result),
+												'Expected Value'=>self::naninf($expected),
 												'Parameters'=>$params,//$data[0],
 												'Elapsed Time'=>sprintf('%.6f',$etime),
 												'Memory Usage'=>$mb,
@@ -350,7 +306,7 @@ example:
 												);
 				}
 				self::$response['object_instance']=serialize($instance_class);
-				//debugging(self::$response['object_instance']);
+				
 			}
 			else {
 				self::$response['Errors'][]=array('ErrorCode'=>4096,'Message'=>"The {$input['method']} does not exist",);
@@ -362,72 +318,16 @@ example:
 		self::outPut();
 	}
 
-
-	public static function factory($post_data){//$autoload, $class_name, $default_return){
-		
-		$post_data['dummies']=json_decode($post_data['dummies'], true);	
-		spl_autoload_register($post_data['autoload']);
-		$class= new \ReflectionClass($post_data['class']);	
-		$tmp=explode('\\',$class->name);
-		$class_name=$tmp[count($tmp)-1];
-		//debugging($class->getNamespaceName());
-		$dummy_class='';
-		if($class->getNamespaceName()){	
-			$dummy_class.='namespace ' . $class->getNamespaceName() . ";\n";
-		}
-		$stl=$class->getStartLine()-1;
-		$enl=$class->getEndLine()-1;
-		$file=$class->getFileName();
-		$mm=array();
-		$mtd_names=array();
-		foreach($class->getMethods() as $method){
-			if(isset($post_data['dummies'][$method->name])){
-				$mtd_names[$method->getStartLine()-1]=$method->name;
-			}
-			$mm[]=$method->getStartLine()-1;
-			$mm[]=$method->getEndLine()-1;
-			
-		}
-		sort($mm);
-		$k=0;
-	 	$c = file($file);
-		for($i=$stl; $i<=$enl; $i++){
-			if(!isset($mm[$k]) || $i!=$mm[$k]){
-				$dummy_class.=$c[$i];// . "\n";
-			}
-			else{
-				if(isset($mtd_names[$i])){
-					$dummy_class.=$c[$i];
-					if(strpos($c[$i], '{')===false){
-						$dummy_class.='{';
-					}
-					//$dummy_class.="return unserialize('".$post_data['dummies'][$mtd_names[$i]]."');\n}";
-					$dummy_class.=$post_data['dummies'][$mtd_names[$i]].";\n}";
-					$i=$mm[$k+1];
-				}
-				else{
-					for($i=$mm[$k]; $i<=$mm[$k+1]; $i++) {
-						$dummy_class.=$c[$i] . "";
-					}
-					$i--;
-				}
-				$k+=2;
-			}
-		}
-		//debugging($dummy_class);
-		return $dummy_class;
-	}
-
 	public static function dummy_loader($class, $_data=null){
 		static $autoloader='';
 		static $dummy_list=array();
 		if($_data){
-			$autoloader=$_data[0];
+			$autoloader=$_data[0][0];
 			$dummy_list=$_data[1];
 		}
-		
+
 		if($class!=null){
-			if(in_array($class, $dummy_list) || isset($dummy_list[$class])){
+			if(isset($dummy_list[$class])){
 				$dummy_class='';
 				$post=array(
 								'factory'=>1,
@@ -447,9 +347,7 @@ example:
 					}
 					curl_close($ch);
 				});
-				//debugging($dummy_class);
 				eval($dummy_class);
-				//debugging(error_get_last());
 			}
 			else{
 				call_user_func($autoloader, $class);
@@ -457,30 +355,79 @@ example:
 		}
 	}
 
+	public static function factory($post_data){		
+		$post_data['dummies']=json_decode($post_data['dummies'], true);
+		
+		spl_autoload_register($post_data['autoload']);
+		$class= new \ReflectionClass($post_data['class']);	
+		$tmp=explode('\\',$class->name);
+		$class_name=$tmp[count($tmp)-1];
+		$dummy_class='';
+		if($class->getNamespaceName()){	
+			$dummy_class.='namespace ' . $class->getNamespaceName() . ";\n";
+		}
+
+		$dummy_class.='use SimpleUnitTest\Test;';
+
+		if(isset($post_data['dummies']['use_namespace'])){
+			$dummy_class.='use '.$post_data['dummies']['use_namespace'] . ';';
+		}
+		$stl=$class->getStartLine()-1;
+		$enl=$class->getEndLine()-1;
+		$file=$class->getFileName();
+
+		exec("php -l $file", $out);
+		$mm=array();
+		$mtd_names=array();
+		foreach($class->getMethods() as $method){
+			if(isset($post_data['dummies']['methods'][$method->name])){
+				$mtd_names[$method->getStartLine()-1]=$method->name;
+			}
+			$mm[]=$method->getStartLine()-1;
+			$mm[]=$method->getEndLine()-1;
+			
+		}
+		sort($mm);
+		$k=0;
+	 	$c = file($file);
+		for($i=$stl; $i<=$enl; $i++){
+			if(!isset($mm[$k]) || $i!=$mm[$k]){
+				$dummy_class.=$c[$i];// . "\n";
+			}
+			else{
+				if(isset($mtd_names[$i])){
+					$dummy_class.=$c[$i];
+					if(strpos($c[$i], '{')===false){
+						$dummy_class.='{';
+					}
+					$dummy_class.=Test::sustitution($post_data['dummies']['methods'][$mtd_names[$i]])."\n}";
+					$i=$mm[$k+1];
+				}
+				else{
+					for($i=$mm[$k]; $i<=$mm[$k+1]; $i++) {
+						$dummy_class.=$c[$i] . "";
+					}
+					$i--;
+				}
+				$k+=2;
+			}
+		}
+		return $dummy_class;
+	}
 }
 
-//####################################################################
-//####################################################################
-//####################################################################
-//
 class Test extends Unit_Test
 {
 	public function print_results(){
-		//debugging();
 		include_once 'simple_unit_test_print_results.php';
 		return print_results($this->result, $this->meta);
 	}
 }
 
-//####################################################################
-//####################################################################
-//
 
 if(count($_POST)){
-//use SimpleUnitTest\Test;
 	if(isset($_POST['unit_test'])){
-	
-		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error');//, E_ALL);
+		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error');
 		set_error_handler('SimpleUnitTest\Test::Fatal_Error', E_ALL);
 		set_exception_handler('SimpleUnitTest\Test::Uncaught_Exception');
 
