@@ -140,7 +140,7 @@ class
 
     the name of the class (fully qualified name) to be tested
 
-**function autoload( string $autoload, bool $prepend=false) 
+**function autoload( string $autoload, bool $prepend=false)**
 
 *Description*
 
@@ -156,7 +156,7 @@ prepend
 
     parameter pass to spl_autoload_register
 
-**function add_dummies(string $class_name, array $methods, string $use_namespace=null)
+**function add_dummies(string $class_name, array $methods, string $use_namespace=null)**
 
 *Description*
 
