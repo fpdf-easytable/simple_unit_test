@@ -39,6 +39,8 @@ he will still get valid data with the wrong test.
 - [Documentation](#documentation)
 - [How to use it](#how-to-use-it)
 - [Examples](#examples)
+- [Conclusion](#conclusion)
+- [License](#license)
 
 
 # Features
@@ -629,8 +631,19 @@ echo $Test->print_results();
 **_NOTE_**
 
 Of course you can make a class where each method is a test (a la phpinit)
-and test those method with Simple Unit Test
+and test those method with Simple Unit Test.
 
 **_More examples_**
 
-More examples can be found in the file [demo.php](https://github.com/fpdf-easytable/simple_unit_test/blob/master/demo.php)
+More examples can be found in the file [demo.php](https://github.com/fpdf-easytable/simple_unit_test/blob/master/demo.php).
+
+# Conclusion
+
+Testing your software is important. No, it is not rocket science or and art as people out there
+think. You do not need to pass
+your hand behind your back and under your leds to scratch your nose.
+
+# License
+
+fpdf-easytable/simple_unit_test (Simple Unit Test) is licensed under the
+GNU General Public License v3.0
