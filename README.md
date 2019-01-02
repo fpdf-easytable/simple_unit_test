@@ -626,3 +626,11 @@ echo $Test->print_results();
 
 ![Example3](http://212.67.221.142/img/example3.png)
 
+**_NOTE_**
+
+Of course you can make a class where each method is a test (a la phpinit)
+and test those method with Simple Unit Test
+
+**_More examples_**
+
+More examples can be found in the file [demo.php](https://github.com/fpdf-easytable/simple_unit_test/blob/master/demo.php)

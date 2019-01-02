@@ -5,9 +5,6 @@ Test::Set_URL('http://localhost/UnitTest/demo.php');
 
 
 //####################################################################
-//####################################################################
-//####################################################################
-
 
 function class_loader2($class){
 	$base=strtolower($class);
@@ -20,7 +17,6 @@ function class_loader2($class){
 
 //====================================================================
 
-//*
 $Test=new Test('Demo');
 $Test->autoload('class_loader2');
 $test_data=[
@@ -40,7 +36,6 @@ echo $Test->print_results();
 /*
 If you want to test functions wrap them in a class
 */
-/*
 
 $Test=new Test('Wrapper');
 $Test->autoload('class_loader2');
@@ -52,11 +47,8 @@ $Test->test('say_hello', $test_data);
 echo $Test->print_results();
 
 /**/
-
 //####################################################################
-//####################################################################
-//####################################################################
-/*
+//*
 $Test=new Test('RemoteConnect');
 $Test->autoload('class_loader2');
 
@@ -64,12 +56,8 @@ $test_data=[
 	['Test1', true, 'www.google.co.uk']
 ];
 
-function assertion($x, $y){
-	return $x===$y;
-}
-$Test->test('connectToServer', $test_data, 'assertion');
+$Test->test('connectToServer', $test_data, '===');
 echo $Test->print_results();
-/**/
 
 //####################################################################
 
@@ -82,7 +70,7 @@ function class_loader($class){
 	}
 }
 
-/*
+
 $Test=new Test('Abc\\Def\\Ghi\\Number',34);
 $Test->autoload('class_loader');
 
@@ -95,11 +83,6 @@ $test_data=[
 $Test->test('multiply', $test_data);
 echo $Test->print_results();
 
-/**/
-
-//####################################################################
-//####################################################################
-//####################################################################
 //####################################################################
 
 function calculator_autoloader($name) {
@@ -110,8 +93,6 @@ function calculator_autoloader($name) {
 }
 
 //--------------------------------------------------------------------
-
-/*
 
 $Test=new Test('Math\Calculator');
 $Test->autoload('calculator_autoloader');
@@ -124,28 +105,24 @@ $test_data=[
 $Test->test('divide', $test_data);
 echo $Test->print_results();
 
-
-/**/
-//####################################################################
 //####################################################################
 /*
-The constructor of Calculator2 has a parameter a web service object
+The constructor of Calculator2 has  as a parameter a web service object
 that require certain time to execute. However we can redefine
 that object so we do not wait.
 */
-/*
 
 spl_autoload_register('calculator_autoloader');
 
 $rgtr=new WebService\WebRegister(4);
 
-function nwait(){
+function no_wait(){
 	sleep(0);
 }
 
 $Test=new Test('Math\Calculator2',$rgtr);
 $Test->autoload('calculator_autoloader');
-$Test->add_dummies('WebService\WebRegister', ['send'=>'nwait']);			
+$Test->add_dummies('WebService\WebRegister', ['send'=>'no_wait']);			
 
 
 $test_data=[
@@ -157,18 +134,15 @@ $test_data=[
 $Test->test('multiply', $test_data);
 echo $Test->print_results();
 
-/**/
 //####################################################################
-/*
 
-function nsend(){
+function no_send(){
 	return true;
 }
 
 $Test=new Test('Math\Calculator_wrapper');
 $Test->autoload('calculator_autoloader');
-//$Test->add_dummies('Math\Calculator2', ['divide'=>'return $number1+$number2;'], 'WebService\WebRegister');
-$Test->add_dummies('WebService\WebRegister', ['send'=>'nsend']);
+$Test->add_dummies('WebService\WebRegister', ['send'=>'no_send']);
 
 $test_data=[
 	['Test1', 2, 4, 2],
@@ -177,11 +151,8 @@ $test_data=[
 
 $Test->test('divide', $test_data);
 echo $Test->print_results();
-/**/
 
 //####################################################################
-
-//*
 
 function mock_input(){
 	static $a=0;
@@ -190,11 +161,6 @@ function mock_input(){
 	$a++;
 	return $b[$c];
 }
-
-function tt2(){
-	return 'NaN';
-}
-
 
 $Test=new Test('Math\CalculatorZ');
 $Test->autoload('calculator_autoloader');
@@ -208,7 +174,6 @@ $test_data=[
 $Test->test('divideBy', $test_data);
 echo $Test->print_results();
 
-/**/
 //####################################################################
 
 include 'footer.html';
