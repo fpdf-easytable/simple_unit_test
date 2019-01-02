@@ -181,7 +181,8 @@ echo $Test->print_results();
 
 //####################################################################
 
-/*
+//*
+
 function tt(){
 	static $a=0;
 	$b=[12,16,22,24];
@@ -193,6 +194,7 @@ function tt(){
 function tt2(){
 	return 'NaN';
 }
+
 
 $Test=new Test('Math\CalculatorZ');
 $Test->autoload('calculator_autoloader');

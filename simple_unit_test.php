@@ -173,36 +173,25 @@ abstract class Unit_Test{
 		}
 		$this->meta['Dummies']=$this->_dummies;
 	}
-	private $spies=array();
-	public function add_spies($class_name, $methods, $spy){
-		if(!isset($this->_spies[$class_name])){
-			$this->_spies[$class_name]=array();
-		}
-		foreach($methods as $k=>$v){
-			if($v=='start'){
-				$v=1;
-			}
-			else{
-				$v=0;
-			}
-			$this->_spies[$class_name][$k]=$v;
-		}
-	}
-	public static function spy(){
-		$args=func_get_args();
-		$func=array_shift($args);
-		return call_user_func_array($func, $args);
-	}
 	public static function sustitution($func){
 		return '$args=func_get_args();
 					return call_user_func_array(\''.$func .'\', $args);';
 	}
-	private static function evaluation($x, $y, $assertion=null){
+	private static function evaluation($result, $expected, $assertion=null){
 		if(!$assertion){
-			return $x==$y;
+			if(is_nan($expected)){
+				return is_nan($result);
+			}
+			if(is_infinite($expected)){
+				return is_infinite($result);
+			}
+			return $result==$expected;
 		}
 		else{
-			return call_user_func($assertion, $x, $y);
+			if($assertion=='==='){
+				return $result===$expected;
+			}
+			return call_user_func($assertion, $result, $expected);
 		}
 	}
 	private static function naninf($result){

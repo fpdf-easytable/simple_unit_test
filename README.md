@@ -355,11 +355,11 @@ class Demo {
 //=========================================================
 
 // test suit for Demo class
+
 <?php
 include 'simple_unit_test.php';
 use SimpleUnitTest\Test;
-Test::Set_URL('http://localhost/UnitTest/demo.php');
-include 'header.html.php';
+Test::Set_URL('http://path/to/this/test/demo_class_test.php')
 
 // define a function to load the classes we need
 
@@ -396,5 +396,27 @@ echo $Test->print_results();
 
 ![Example1](http://212.67.221.142/img/example1.png)
 
+**_Example 2_**
 
+The following code can be found [here](https://gist.github.com/jonmchan/4558701) 
 
+```
+<?php
+// Calculator.php
+class Calculator {
+    public function getNumberFromUserInput() {
+        // complicated function to get number from user input
+    }
+    public function printToScreen($value) {
+        // another complicated function
+    }
+    public function divideBy($num2) {
+        if ($num2 == 0) return NAN;
+        return $this->getNumberFromUserInput()/$num2;
+    }
+    public function divideByAndPrint($num2) {
+        if ($num2 == 0) $this->printToScreen("NaN");
+        $this->printToScreen($this->getNumberFromUserInput()/$num2);
+    }
+}
+```
