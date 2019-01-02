@@ -401,6 +401,7 @@ echo $Test->print_results();
 The following code can be found [here](https://gist.github.com/jonmchan/4558701) 
 
 ```
+============file1============
 <?php
 // Calculator.php
 class Calculator {
@@ -419,4 +420,85 @@ class Calculator {
         $this->printToScreen($this->getNumberFromUserInput()/$num2);
     }
 }
+==========end file1=============
+
+==========file2=================
+<?php
+// CalculatorTest.php
+include_once("Calculator.php");
+
+class CalculatorTest extends \PHPUnit_Framework_TestCase {
+    public function testDivideByPositiveNumber() {
+        $calcMock=$this->getMock('\Calculator',array('getNumberFromUserInput'));
+        $calcMock->expects($this->once())
+            ->method('getNumberFromUserInput')
+            ->will($this->returnValue(10));
+        $this->assertEquals(5,$calcMock->divideBy(2));
+    }
+    public function testDivideByZero() {
+        $calcMock=$this->getMock('\Calculator',array('getNumberFromUserInput'));
+        $calcMock->expects($this->never())
+            ->method('getNumberFromUserInput')
+            ->will($this->returnValue(10));
+        $this->assertEquals(NAN, $calcMock->divideBy(0));
+    }
+    public function testDivideByNegativeNumber() {
+        $calcMock=$this->getMock('\Calculator',array('getNumberFromUserInput'));
+        $calcMock->expects($this->once())
+            ->method('getNumberFromUserInput')
+            ->will($this->returnValue(10));
+        $this->assertEquals(-2,$calcMock->divideBy(-5));
+    }
+    public function testDivideByPositiveNumberAndPrint() {
+        $calcMock=$this->getMock('\Calculator',array('getNumberFromUserInput', 'printToScreen'));
+        $calcMock->expects($this->once())
+            ->method('getNumberFromUserInput')
+            ->will($this->returnValue(10));
+        $calcMock->expects($this->once())
+            ->method('printToScreen')
+            ->with($this->equalTo('5'));
+        $calcMock->divideByAndPrint(2);
+    }
+}
+===========end file2=================
 ```
+
+Testing the same class with Simple Unit Test:
+```
+<?php
+include 'simple_unit_test.php';
+use SimpleUnitTest\Test;
+Test::Set_URL('http://localhost/UnitTest/demo.php');
+
+function calculator_autoloader($name) {
+    $name = str_replace('\\', '/', $name) . '.php';
+    $srcPath = __DIR__ . '/Examples/src/' . $name;
+    if (is_file($srcPath)) include_once $srcPath;
+    else include_once __DIR__ . '/Examples/' . $name;
+}
+
+function mock_input(){
+	static $a=0;
+	$b=[12,16,22,24];
+	$c=$a;
+	$a++;
+	return $b[$c];
+}
+
+$Test=new Test('Math\CalculatorZ');
+$Test->autoload('calculator_autoloader');
+$Test->add_dummies('Math\CalculatorZ', ['getNumberFromUserInput'=>'mock_input']);
+
+$test_data=[
+	['DivideByPositive', 2, 6],
+	['DivideByPositive2', 2, 8],
+	['DivideByZero', NAN, 0],
+];
+$Test->test('divideBy', $test_data);
+echo $Test->print_results();
+```
+
+* Result:
+
+![Example2](http://212.67.221.142/img/example2.png)
+

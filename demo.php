@@ -183,7 +183,7 @@ echo $Test->print_results();
 
 //*
 
-function tt(){
+function mock_input(){
 	static $a=0;
 	$b=[12,16,22,24];
 	$c=$a;
@@ -198,8 +198,7 @@ function tt2(){
 
 $Test=new Test('Math\CalculatorZ');
 $Test->autoload('calculator_autoloader');
-$Test->add_dummies('Math\CalculatorZ', ['getNumberFromUserInput'=>'tt', 
-'printToScreen'=>'tt2']);
+$Test->add_dummies('Math\CalculatorZ', ['getNumberFromUserInput'=>'mock_input']);
 
 $test_data=[
 	['DivideByPositive', 2, 6],
