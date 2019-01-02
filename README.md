@@ -35,6 +35,7 @@ he will still get valid data with the wrong test.
 
 - [Features](#features)
 - [Comparisons](#comparisons)
+- [Install](#install)
 - [Documentation](#documentation)
 - [How to use it](#how-to-use-it)
 - [Examples](#examples)
@@ -138,6 +139,11 @@ Just one file
 
     ?>
 
+# Install
+
+Download the Simple Unit Test class and include the relevant files in your test suit.
+
+Compos---what? Seriously, since when the include statement became rocket science?
 
 # Documentation
 
