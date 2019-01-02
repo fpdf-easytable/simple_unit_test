@@ -31,6 +31,24 @@ does not use the relevant test cases to test his program, it does not matter if 
 the super fancy unit test out there to do the test or the "can you hear me?" approach, 
 he will still get valid data with the wrong test. 
 
+# Content
+
+- [Features](#features)
+- [Comparisons](#comparisons)
+- [Documentation](#documentation)
+- [How to use it](#how-to-use-it)
+- [Examples](#examples)
+
+
+# Features
+
+- No need to extend any class
+- Dummy objects (test doubles)
+- Set custom definition of assertion function to be used for the test;
+- Ability to test private or public methods
+
+
+
 # Comparisons
 
 Suppose we have a class HelloWorld
@@ -100,8 +118,6 @@ Just one file
     use SimpleUnitTest\Test;
     Test::Set_URL('url/of/for/this/test');
 
-    include '../Unit_test/header.html.php'; // for HTML
-
     function autoloader($class) {
         //some code
     }
@@ -121,13 +137,6 @@ Just one file
     echo $Test->print_results();
 
     ?>
-
-# Features
-
-- No need to extend any class
-- Dummy objects (test doubles)
-- Set custom definition of assertion function to be used for the test;
-- Ability to test private or public methods
 
 
 # Documentation
@@ -304,6 +313,7 @@ test, run the test
 # Examples
 
 *Example 1.
+
 ```
 // file: demo_class.php
 <?php
@@ -384,7 +394,7 @@ echo $Test->print_results();
 ```
 * Result:
 
-![Example1](http://212.67.221.142/img/exemple1.png)
+![Example1](http://212.67.221.142/img/example1.png)
 
 
 

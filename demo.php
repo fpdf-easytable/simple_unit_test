@@ -20,7 +20,7 @@ function class_loader2($class){
 
 //====================================================================
 
-/*
+//*
 $Test=new Test('Demo');
 $Test->autoload('class_loader2');
 $test_data=[
@@ -40,7 +40,7 @@ echo $Test->print_results();
 /*
 If you want to test functions wrap them in a class
 */
-// *
+/*
 
 $Test=new Test('Wrapper');
 $Test->autoload('class_loader2');
@@ -56,7 +56,7 @@ echo $Test->print_results();
 //####################################################################
 //####################################################################
 //####################################################################
-//*
+/*
 $Test=new Test('RemoteConnect');
 $Test->autoload('class_loader2');
 
@@ -72,7 +72,7 @@ echo $Test->print_results();
 /**/
 
 //####################################################################
-//*
+
 function class_loader($class){
 	$base='Examples/phpunit_example/src/';
 	$base.="{$class}.php";
@@ -82,7 +82,7 @@ function class_loader($class){
 	}
 }
 
-
+/*
 $Test=new Test('Abc\\Def\\Ghi\\Number',34);
 $Test->autoload('class_loader');
 
@@ -181,7 +181,7 @@ echo $Test->print_results();
 
 //####################################################################
 
-
+/*
 function tt(){
 	static $a=0;
 	$b=[12,16,22,24];
@@ -207,7 +207,7 @@ $test_data=[
 $Test->test('divideBy', $test_data);
 echo $Test->print_results();
 
-
+/**/
 //####################################################################
 
 include 'footer.html';

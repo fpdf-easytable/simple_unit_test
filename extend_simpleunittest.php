@@ -41,7 +41,12 @@ class Test extends Unit_Test
 				}
 
 				if(isset($result['Tests']) && count($result['Tests'])){
-					$html.='<tr><th>Test</th><th>Status</th><th>Result</th><th>Expected Value</th><th>Parameters</th><th>Elapsed time</th><th>MB</th><th style="width:30%;">Exceptions/Warnings</th></tr>';
+					$html.='<tr><th>Test</th>
+					<th>Status</th><th>Result</th>
+					<th>Expected Value</th><th>Parameters</th>
+					<th style="width:8%;">Elapsed time</th>
+					<th style="width:7%;">MB</th>
+					<th style="width:30%;">Exceptions/Warnings</th></tr>';
 
 				foreach($result['Tests'] as $tn=>$data){
 					$class='class="warning"';
