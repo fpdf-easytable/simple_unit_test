@@ -634,7 +634,7 @@ More examples can be found in the file [demo.php](https://github.com/fpdf-easyta
 Testing your software is important... No, it is not rocket science or and art as people out there
 think. You do not need to pass your hand behind your back and under your leds to scratch your nose. 
 
-Simple Unit Test is far from be the swedish knife of the testing units.
+Simple Unit Test is far from being the swedish knife of the testing units.
 
 # License
 
