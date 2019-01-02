@@ -208,6 +208,7 @@ use_namespace
 **_Note_**
     1) the parameters use for the callback function are the same of the original definition of
     the method.
+    
     2) add_dummies method can be called as many times as needed in order to add more classes
     and methods
 
@@ -238,20 +239,11 @@ test_data
 assertion
 
     name of a callable function to be used to assert the result of the method. If it is 
-    omitted, the assertion is via "result==expected_value".
-		
+    omitted, the assertion is via "result==expected_value", if you need to assert '==='
+    pass the string '===' as assetion parameter.
+
+
 *Example*
-```
-    function assertion($result, $expected){
-        return $result===$expected;
-    }
-
-    $Test->test('connectToServer', 
-             array('Test1'=>array(array('www.example.com'),true)), 'assertion');
-    
-```		
-*Other examples of assertions*
-
 ```
     function assertion($result, $expected){
        return in_array($result, $expected);
@@ -639,9 +631,10 @@ More examples can be found in the file [demo.php](https://github.com/fpdf-easyta
 
 # Conclusion
 
-Testing your software is important. No, it is not rocket science or and art as people out there
-think. You do not need to pass
-your hand behind your back and under your leds to scratch your nose.
+Testing your software is important... No, it is not rocket science or and art as people out there
+think. You do not need to pass your hand behind your back and under your leds to scratch your nose. 
+
+Simple Unit Test is far from be the swedish knife of the testing units.
 
 # License
 
