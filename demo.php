@@ -12,7 +12,7 @@ Test::Set_URL('http://localhost/UnitTest/demo.php');
 function class_loader2($class){
 	$base=strtolower($class);
 	$base.='_class.php';
-	$class='Demo_class/'.$base;
+	$class='Examples/Demo_class/'.$base;
 	if(file_exists($class)){		
 		include_once $class;
 	}	
@@ -40,7 +40,7 @@ echo $Test->print_results();
 /*
 If you want to test functions wrap them in a class
 */
-/*
+// *
 
 $Test=new Test('Wrapper');
 $Test->autoload('class_loader2');
@@ -56,7 +56,7 @@ echo $Test->print_results();
 //####################################################################
 //####################################################################
 //####################################################################
-/*
+//*
 $Test=new Test('RemoteConnect');
 $Test->autoload('class_loader2');
 
@@ -72,9 +72,9 @@ echo $Test->print_results();
 /**/
 
 //####################################################################
-/*
+//*
 function class_loader($class){
-	$base='phpunit_example/src/';
+	$base='Examples/phpunit_example/src/';
 	$base.="{$class}.php";
 	$base=strtr($base, array('Abc\\Def\\Ghi\\'=>''));
 	if(file_exists($base)){
@@ -104,9 +104,9 @@ echo $Test->print_results();
 
 function calculator_autoloader($name) {
     $name = str_replace('\\', '/', $name) . '.php';
-    $srcPath = __DIR__ . '/src/' . $name;
+    $srcPath = __DIR__ . '/Examples/src/' . $name;
     if (is_file($srcPath)) include_once $srcPath;
-    else include_once __DIR__ . '/' . $name;
+    else include_once __DIR__ . '/Examples/' . $name;
 }
 
 //--------------------------------------------------------------------
