@@ -2,7 +2,6 @@
 include 'simple_unit_test.php';
 use SimpleUnitTest\Test;
 Test::Set_URL('http://localhost/UnitTest/demo.php');
-include 'header.html.php';
 
 
 //####################################################################
