@@ -143,7 +143,7 @@ Just one file
 
 Download the Simple Unit Test class and include the relevant files in your test suit.
 
-Compos---what? Seriously, since when the include statement became rocket science?
+Compos---what? Seriously, since when the php include statement and autoload became rocket science?
 
 # Documentation
 
