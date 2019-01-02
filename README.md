@@ -502,3 +502,110 @@ echo $Test->print_results();
 
 ![Example2](http://212.67.221.142/img/example2.png)
 
+**_Example 3_**
+
+Let's see a real world example. This is from the tests of project [phpspreadsheet](https://github.com/PHPOffice/PhpSpreadsheet)
+and the test covered in this example is [this](https://github.com/PHPOffice/PhpSpreadsheet/blob/master/tests/PhpSpreadsheetTests/Reader/XmlTest.php). 
+```
+<?php
+namespace PhpOffice\PhpSpreadsheetTests\Reader;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Reader\Xml;
+use PHPUnit\Framework\TestCase;
+class XmlTest extends TestCase
+{
+    /**
+     * @dataProvider providerInvalidSimpleXML
+     *
+     * @param $filename
+     */
+    public function testInvalidSimpleXML($filename)
+    {
+        $this->expectException(\PhpOffice\PhpSpreadsheet\Reader\Exception::class);
+        $xmlReader = new Xml();
+        $xmlReader->trySimpleXMLLoadString($filename);
+    }
+    public function providerInvalidSimpleXML()
+    {
+        $tests = [];
+        foreach (glob(__DIR__ . '/../../data/Reader/Xml/XEETestInvalidSimpleXML*.xml') as $file) {
+            $tests[basename($file)] = [realpath($file)];
+        }
+        return $tests;
+    }
+    /**
+     * Check if it can read XML Hyperlink correctly.
+     */
+    public function testReadHyperlinks()
+    {
+        $reader = new Xml();
+        $spreadsheet = $reader->load('../samples/templates/Excel2003XMLTest.xml');
+        $firstSheet = $spreadsheet->getSheet(0);
+        $hyperlink = $firstSheet->getCell('L1');
+        self::assertEquals(DataType::TYPE_STRING, $hyperlink->getDataType());
+        self::assertEquals('PhpSpreadsheet', $hyperlink->getValue());
+        self::assertEquals('https://phpspreadsheet.readthedocs.io', $hyperlink->getHyperlink()->getUrl());
+    }
+    public function testReadWithoutStyle()
+    {
+        $reader = new Xml();
+        $spreadsheet = $reader->load(__DIR__ . '/../../data/Reader/Xml/WithoutStyle.xml');
+        self::assertSame('Test String 1', $spreadsheet->getActiveSheet()->getCell('A1')->getValue());
+    }
+}
+
+```
+With Simple Unit Test:
+
+```
+<?php
+include '../../Unit_test/simple_unit_test.php';
+use SimpleUnitTest\Test;
+Test::Set_URL('http://localhost/ZPhpSpreadsheet/Test/prueba.php');
+
+function autoloader($class){
+	$name = str_replace('\\', '/', $class) . '.php';
+	$name=strtr($name, ['PhpOffice/'=>'']);
+   $srcPath = __DIR__ . '/../src/' . $name;
+   if (is_file($srcPath)){
+   	include_once $srcPath;
+   }
+   else{
+   	include_once __DIR__ . '/' . $name;
+   }
+}
+
+$Test=new Test('PhpOffice\PhpSpreadsheet\Reader\Xml');
+$Test->autoload('autoloader');
+
+function assertion($result, $expected){
+	static $a=0;
+	if($a==0){
+		$a++;
+		$firstSheet = $result->getSheet(0);
+   	$hyperlink = $firstSheet->getCell('L1');
+	   return $expected === is_string($hyperlink->getDataType()) && ('PhpSpreadsheet'==$hyperlink->getValue()) &&
+         ('https://phpspreadsheet.readthedocs.io'==$hyperlink->getHyperlink()->getUrl()); 
+	}
+	else{
+		return $expected==$result->getActiveSheet()->getCell('A1')->getValue();
+	}
+}
+$test_data=[
+	['ReadHyperlinks', true, '../samples/templates/Excel2003XMLTest.xml'],
+	['ReadWithoutStyle', 'Test String 1', 'data/Reader/Xml/WithoutStyle.xml'],
+];
+$Test->test('load', $test_data, 'assertion');
+$test_data=[];
+foreach(glob('data/Reader/Xml/XEETestInvalid*.xml') as $file) {
+	$test_data[]=[basename($file), false, realpath($file)];
+}
+$Test->test('trySimpleXMLLoadString', $test_data);
+echo $Test->print_results();
+
+?>
+```
+* Result:
+
+![Example3](http://212.67.221.142/img/example3.png)
+
