@@ -578,6 +578,9 @@ function autoloader($class){
 $Test=new Test('PhpOffice\PhpSpreadsheet\Reader\Xml');
 $Test->autoload('autoloader');
 
+// Begin test. Method: load
+// for test this method we need to define an assertion to be used
+
 function assertion($result, $expected){
 	static $a=0;
 	if($a==0){
@@ -596,11 +599,19 @@ $test_data=[
 	['ReadWithoutStyle', 'Test String 1', 'data/Reader/Xml/WithoutStyle.xml'],
 ];
 $Test->test('load', $test_data, 'assertion');
+
+// end test
+
+// begin test. Method: trySimpleXMLLoadString
+
 $test_data=[];
 foreach(glob('data/Reader/Xml/XEETestInvalid*.xml') as $file) {
 	$test_data[]=[basename($file), false, realpath($file)];
 }
 $Test->test('trySimpleXMLLoadString', $test_data);
+
+//end of test
+
 echo $Test->print_results();
 
 ?>
