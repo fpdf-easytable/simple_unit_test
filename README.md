@@ -212,6 +212,38 @@ use_namespace
     2) add_dummies method can be called as many times as needed in order to add more classes
     and methods
 
+**function add_spy(string $class, string $method, string $position, string $callback, string $ckp1, string $ckp2...)**
+
+*Description*
+
+   Set the callback function inside the definition of the method $method of the class $class
+   at the position $position.
+
+*Parameters*
+
+class
+
+    the name (full qualified name) of the class with the method you want to spy on
+    
+method
+
+    the name of the method you want to spy on
+    
+position
+
+    it can take just two values: 'begin' (begining of the method definition) 
+    or 'end' (the end of the method definition just before return statement)
+    
+callback
+
+    a callable function that you want to use to spy on the method
+
+ckp1,... etc
+
+	the names of the variables (as meny as your callback needs) that you want to pass to the callback. For example if you
+	need to pass the variable $my_variable, you need to pass 'my_variable'.
+
+
 **function test(string $method, array $test_data, string $assertion=null)**
 
 *Description*
