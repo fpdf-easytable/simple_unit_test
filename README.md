@@ -575,12 +575,6 @@ function autoloader($class){
    }
 }
 
-$Test=new Test('PhpOffice\PhpSpreadsheet\Reader\Xml');
-$Test->autoload('autoloader');
-
-// Begin test. Method: load
-// for test this method we need to define an assertion to be used
-
 function assertion($result, $expected){
 	static $a=0;
 	if($a==0){
@@ -594,6 +588,12 @@ function assertion($result, $expected){
 		return $expected==$result->getActiveSheet()->getCell('A1')->getValue();
 	}
 }
+
+$Test=new Test('PhpOffice\PhpSpreadsheet\Reader\Xml');
+$Test->autoload('autoloader');
+
+// Begin test. Method: load
+
 $test_data=[
 	['ReadHyperlinks', true, '../samples/templates/Excel2003XMLTest.xml'],
 	['ReadWithoutStyle', 'Test String 1', 'data/Reader/Xml/WithoutStyle.xml'],

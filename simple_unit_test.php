@@ -13,6 +13,16 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 abstract class Unit_Test{
+	private static $url;
+	private static $response=array('Errors'=>array());
+	private static $autoload;
+	private static $dummies;
+	private static $spies;
+	private  $_dummies=array();
+	private  $_spies=array();
+	private  $_autoload=array();
+	protected $_meta;
+	protected $meta;
 	private static function outPut(){
 		$response=json_encode(self::$response, JSON_PRESERVE_ZERO_FRACTION);
 		ob_clean();
@@ -48,7 +58,6 @@ abstract class Unit_Test{
 						);
 		self::outPut();
 	}
-	private static $response=array('Errors'=>array());
 	function __destruct(){
 		self::Fatal_Error();
 	}
@@ -85,8 +94,8 @@ abstract class Unit_Test{
 	protected static $CURL_OPTIONS=array(
 				CURLOPT_URL =>'',
 				CURLOPT_RETURNTRANSFER=>true,
-				CURLOPT_ENCODING=>"",
-				CURLOPT_TIMEOUT=>30, 
+				CURLOPT_ENCODING=>"", 
+				CURLOPT_TIMEOUT=>30,  
 				CURLOPT_POST=>1
 			  );
 	public static function curly($post, $f){
@@ -106,6 +115,7 @@ abstract class Unit_Test{
 		$post['meta']=$this->_meta;
 		$post['dummies']=$this->_dummies;
 		$post['autoload']=$this->_autoload;
+		$post['spies']=$this->_spies;
 		self::curly(array('unit_test'=>1,'data'=>serialize($post)), function($ch){
 			$result=array('ResponseCode'=>500,'Message'=>'');
 			$raw_response=curl_exec($ch);
@@ -131,10 +141,6 @@ abstract class Unit_Test{
 			$this->result[]=$result;
 		});
 	}
-	abstract public function print_results();
-	private $data;
-	private static $url;
-	protected $meta;
 	public function __construct(){
 		$params=func_get_args();
 		$this->_meta=[
@@ -173,9 +179,19 @@ abstract class Unit_Test{
 		}
 		$this->meta['Dummies']=$this->_dummies;
 	}
-	public static function sustitution($func){
-		return '$args=func_get_args();
-					return call_user_func_array(\''.$func .'\', $args);';
+	public function add_spy(){
+		$args=func_get_args();
+		$class_name=array_shift($args);
+		if(!isset($this->_spies[$class_name])){
+			$this->_spies[$class_name]=array();
+		}
+		$method=array_shift($args);
+		$position=array_shift($args);
+		if($position!='begin'){
+			$position='end';
+		}
+		$token="{$method}:{$position}";
+		$this->_spies[$class_name][$token]=$args;
 	}
 	private static function evaluation($result, $expected, $assertion=null){
 		if(!$assertion){
@@ -194,15 +210,6 @@ abstract class Unit_Test{
 			return call_user_func($assertion, $result, $expected);
 		}
 	}
-	private static function naninf($result){
-		if(is_infinite($result)){
-			return 'INF';
-		}
-		elseif(is_nan($result)){
-			return 'NAN';
-		}
-		return $result;
-	}
 	private static function get_type(&$result){
 		if(is_object($result)){
 			return get_class($result);
@@ -216,13 +223,11 @@ abstract class Unit_Test{
 		self::$response['Method']=$input['method'];
 		self::$response['Tests']=array();
 		self::$url=$input['url'];
-		if(!isset($input['dummies'])){
-			$input['dummies']=array();
-		}
+		self::$autoload=$input['autoload'][0];
+		self::$dummies=$input['dummies'];
+		self::$spies=$input['spies'];
 		try{
 			if($input['autoload'][0]){
-				
-				self::dummy_loader(null, array($input['autoload'], $input['dummies']));
 				if(!spl_autoload_register('self::dummy_loader', $throw=true, $input['autoload'][1])){
 					throw new \Exception(var_export(error_get_last(), true)); 
 				}
@@ -277,7 +282,7 @@ abstract class Unit_Test{
 												'Status'=>$status, 
 												'Result'=>self::get_type($result),
 												'Expected Value'=>self::get_type($expected),
-												'Parameters'=>$params,
+												'Parameters'=>$params,//$data[0],
 												'Elapsed Time'=>sprintf('%.6f',$etime),
 												'Memory Usage'=>$mb,
 												'Exception'=>$msg,
@@ -295,22 +300,21 @@ abstract class Unit_Test{
 		}
 		self::outPut();
 	}
-	public static function dummy_loader($class, $_data=null){
-		static $autoloader='';
-		static $dummy_list=array();
-		if($_data){
-			$autoloader=$_data[0][0];
-			$dummy_list=$_data[1];
-		}
+	public static function dummy_loader($class){
 		if($class!=null){
-			if(isset($dummy_list[$class])){
+			if(isset(self::$dummies[$class]) || isset(self::$spies[$class])){
 				$dummy_class='';
 				$post=array(
 								'factory'=>1,
-								'autoload'=>$autoloader,
+								'autoload'=>self::$autoload,
 								'class'=>$class,
-								'dummies'=>json_encode($dummy_list[$class])
 								);
+				if(isset(self::$dummies[$class])){
+					$post['dummies']=json_encode(self::$dummies[$class]);
+				}
+				if(isset(self::$spies[$class])){
+					$post['spies']=json_encode(self::$spies[$class]);
+				}
 				self::curly($post, function($ch) use(&$dummy_class){
 					$raw_response=curl_exec($ch);
 					if(curl_errno($ch)==0 ){
@@ -324,12 +328,51 @@ abstract class Unit_Test{
 				eval($dummy_class);
 			}
 			else{
-				call_user_func($autoloader, $class);
+				call_user_func(self::$autoload, $class);
 			}
 		}
 	}
+	public static function get_spy($data){
+		static $_spies=array();
+		if(is_array($data)){
+			$_spies=$data;
+		}
+		else{
+			if(isset($_spies[$data])){
+				$ck=array_shift($_spies[$data]);
+				$str='';
+				foreach($_spies[$data] as $arg){
+					$str.='$'.$arg.',';
+				}
+				$str=trim($str, ',');
+				return "Test::spy('{$ck}', " . $str . ");";
+			}
+			return '';
+		}
+	}
+	public static function spy(){
+		$args=func_get_args();
+		$func=array_shift($args);
+		return call_user_func_array($func, $args);
+	}
+	public static function sustitution($func){
+		return '$args=func_get_args();
+					return call_user_func_array(\''.$func .'\', $args);';
+	}
 	public static function factory($post_data){		
-		$post_data['dummies']=json_decode($post_data['dummies'], true);
+		if(isset($post_data['dummies'])){
+			$post_data['dummies']=json_decode($post_data['dummies'], true);
+		}
+		else{
+			$post_data['dummies']=array();
+		}
+		if(isset($post_data['spies'])){
+			$post_data['spies']=json_decode($post_data['spies'], true);
+		}
+		else{
+			$post_data['spies']=array();
+		}
+		self::get_spy($post_data['spies']);
 		spl_autoload_register($post_data['autoload']);
 		$class= new \ReflectionClass($post_data['class']);	
 		$tmp=explode('\\',$class->name);
@@ -345,16 +388,16 @@ abstract class Unit_Test{
 		$stl=$class->getStartLine()-1;
 		$enl=$class->getEndLine()-1;
 		$file=$class->getFileName();
-		exec("php -l $file", $out);
 		$mm=array();
 		$mtd_names=array();
+		$sp_names=array();
 		foreach($class->getMethods() as $method){
 			if(isset($post_data['dummies']['methods'][$method->name])){
 				$mtd_names[$method->getStartLine()-1]=$method->name;
 			}
+			$sp_names[$method->getStartLine()-1]=$method->name;
 			$mm[]=$method->getStartLine()-1;
 			$mm[]=$method->getEndLine()-1;
-			
 		}
 		sort($mm);
 		$k=0;
@@ -369,12 +412,24 @@ abstract class Unit_Test{
 					if(strpos($c[$i], '{')===false){
 						$dummy_class.='{';
 					}
-					$dummy_class.=Test::sustitution($post_data['dummies']['methods'][$mtd_names[$i]])."\n}";
+					$dummy_class.=self::sustitution($post_data['dummies']['methods'][$mtd_names[$i]])."
+					}\n";
 					$i=$mm[$k+1];
 				}
 				else{
-					for($i=$mm[$k]; $i<=$mm[$k+1]; $i++) {
-						$dummy_class.=$c[$i] . "";
+					$spm=$sp_names[$mm[$k]];
+					$a=true;
+					$dummy_class.=$c[$mm[$k]];
+					if(strpos($c[$mm[$k]], '{')===false){
+						$dummy_class.='{';
+					}
+					$dummy_class.=self::get_spy("{$spm}:begin") . "\n";
+					for($i=$mm[$k]+1; $i<=$mm[$k+1]; $i++) {
+						if($a && (strpos(trim($c[$i]), 'return')===0 || $i==$mm[$k+1])){
+							$a=false;
+							$dummy_class.=self::get_spy("{$spm}:end") . "\n";
+						}
+						$dummy_class.=$c[$i];
 					}
 					$i--;
 				}
@@ -383,18 +438,20 @@ abstract class Unit_Test{
 		}
 		return $dummy_class;
 	}
+	abstract public function print_results();
 	abstract protected function __init();
 }
 
-//####################################################################
+/*
+Include the customized extended class 
+*/
 
 include __DIR__ . '/extend_simpleunittest.php';
 
-//####################################################################
 
 if(count($_POST)){
 	if(isset($_POST['unit_test'])){
-		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error');
+		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error');//, E_ALL);
 		set_error_handler('SimpleUnitTest\Test::Fatal_Error', E_ALL);
 		set_exception_handler('SimpleUnitTest\Test::Uncaught_Exception');
 		Test::run_test();
