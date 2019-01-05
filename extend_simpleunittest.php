@@ -68,7 +68,7 @@ class Test extends Unit_Test
 						<td>' . $data['Status'] .' </td>
 						<td>' . $data['Result'] . '</td>
 						<td>' . $data['Expected Value'] . '</td>
-						<td>' . $data['Parameters'] . '</td>
+						<td>' . implode('<br/>',$data['Parameters']) . '</td>
 						<td>' . $data['Elapsed Time'] . '</td>
 						<td>' . $data['Memory Usage'] . '</td>
 						<td>' . $data['Exception'] . ' ' . $data['Warnings'] . '</td>
