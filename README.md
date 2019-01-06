@@ -153,7 +153,9 @@ Compos---what? Seriously, since when the php include statement and autoload beca
 
 class
 
-    the name of the class (fully qualified name) to be tested
+    the name of the class (fully qualified name) to be tested. Example:
+    new Test('My\Super\Drupper\Class');
+    
 
 **function autoload( string $autoload, bool $prepend=false)**
 
