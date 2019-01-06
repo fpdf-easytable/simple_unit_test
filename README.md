@@ -252,7 +252,7 @@ callback
 
 ckp1,... etc
 
-	the names of the variables (as meny as your callback needs) that you want to pass to the callback. For example if you
+	the names of the variables (as many as your callback needs) that you want to pass to the callback. For example if you
 	need to pass the variable $my_variable, you need to pass 'my_variable'.
 
 
