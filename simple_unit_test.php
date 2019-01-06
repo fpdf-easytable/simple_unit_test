@@ -18,13 +18,39 @@ abstract class Unit_Test{
 	private static $autoload;
 	private static $dummies;
 	private static $spies;
+	protected static $CURL_OPTIONS=array(
+				CURLOPT_URL =>'',
+				CURLOPT_RETURNTRANSFER=>true,
+				CURLOPT_ENCODING=>"",
+				CURLOPT_TIMEOUT=>30,
+				CURLOPT_POST=>1
+			  );
 	private  $_dummies=array();
 	private  $_spies=array();
 	private  $_autoload=array();
 	protected $_meta;
 	protected $meta;
+	static private $_JSON_ERRORS=[
+		'No error has occurred.',
+		'The maximum stack depth has been exceeded.',
+		'Occurs with underflow or with the modes mismatch.',
+		'Control character error, possibly incorrectly encoded.',
+		'Syntax error.',
+		'Malformed UTF-8 characters, possibly incorrectly encoded.',  
+		'The object or array passed to json_encode() include recursive references and cannot be encoded. If the JSON_PARTIAL_OUTPUT_ON_ERROR option was given, NULL will be encoded in the place of the recursive reference.',
+		'The value passed to json_encode() includes either NAN or INF. If the JSON_PARTIAL_OUTPUT_ON_ERROR option was given, 0 will be encoded in the place of these special numbers.',
+		'A value of an unsupported type was given to json_encode(), such as a resource. If the JSON_PARTIAL_OUTPUT_ON_ERROR option was given, NULL will be encoded in the place of the unsupported value.',
+		'A key starting with \u0000 character was in the string passed to json_decode() when decoding a JSON object into a PHP object.',
+		'Single unpaired UTF-16 surrogate in unicode escape contained in the JSON string passed to json_encode().',
+	];
 	private static function outPut(){
-		$response=json_encode(self::$response, JSON_PRESERVE_ZERO_FRACTION);
+		$response=@ json_encode(self::$response, JSON_PRESERVE_ZERO_FRACTION);
+		if($jec=json_last_error()){
+			$response['Errors'][]=array(
+						'Message'=>self::$_JSON_ERRORS[$jec], 
+						);
+			$response=json_encode($response);
+		}
 		ob_clean();
 		ob_start();
 		header('Content-Type: application/json');
@@ -91,13 +117,6 @@ abstract class Unit_Test{
 			self::outPut();
 		}
 	}
-	protected static $CURL_OPTIONS=array(
-				CURLOPT_URL =>'',
-				CURLOPT_RETURNTRANSFER=>true,
-				CURLOPT_ENCODING=>"", 
-				CURLOPT_TIMEOUT=>30, 
-				CURLOPT_POST=>1
-			  );
 	public static function curly($post, $f){
 		$curl_options=self::$CURL_OPTIONS;
 		$curl_options[CURLOPT_URL]=self::$url;
@@ -324,7 +343,6 @@ abstract class Unit_Test{
 								'factory'=>1,
 								'autoload'=>self::$autoload,
 								'class'=>$class,
-								
 								);
 				if(isset(self::$dummies[$class])){
 					$post['dummies']=json_encode(self::$dummies[$class]);
@@ -334,7 +352,6 @@ abstract class Unit_Test{
 				}
 				self::curly($post, function($ch) use(&$result){
 					$raw_response=curl_exec($ch);
-					
 					if(curl_errno($ch)==0 ){
 						$status_code=curl_getinfo($ch, CURLINFO_HTTP_CODE);
 						$response=explode("\r\n\r\n", $raw_response);
@@ -443,8 +460,10 @@ abstract class Unit_Test{
 				$mtd_names[$method->getStartLine()-1]=$method->name;
 			}
 			$sp_names[$method->getStartLine()-1]=$method->name;
+			
 			$mm[]=$method->getStartLine()-1;
 			$mm[]=$method->getEndLine()-1;
+			
 		}
 		sort($mm);
 		$k=0;
@@ -472,7 +491,9 @@ abstract class Unit_Test{
 						$j++;
 					}
 					$dummy_class.=self::get_spy("{$spm}:begin") . "\n";
+					
 					for($i=$mm[$k]+$j; $i<=$mm[$k+1]; $i++) {
+						
 						if($a && (strpos(trim($c[$i]), 'return')===0 || $i==$mm[$k+1])){
 							$a=false;
 							$dummy_class.=self::get_spy("{$spm}:end") . "\n";
@@ -499,7 +520,7 @@ include __DIR__ . '/extend_simpleunittest.php';
 
 if(count($_POST)){
 	if(isset($_POST['unit_test'])){
-		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error');
+		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error');//, E_ALL);
 		set_error_handler('SimpleUnitTest\Test::Fatal_Error', E_ALL);
 		set_exception_handler('SimpleUnitTest\Test::Uncaught_Exception');
 		Test::run_test();
