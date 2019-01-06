@@ -207,10 +207,11 @@ use_namespace
 
 ```
     function dummy_send(some-parameters){
+        $obj=new Obj();
        //some code
     }
 
-    $Test->add_dummies('WebService\\WebRegister', ['send'=>'dummy_send']);
+    $Test->add_dummies('WebService\\WebRegister', ['send'=>'dummy_send'], 'NameSpace\Obj');
 ```
 **_Note_**
 

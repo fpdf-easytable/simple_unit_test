@@ -451,6 +451,9 @@ abstract class Unit_Test{
 				$dummy_class.=$c[$i];
 			}
 		}
+		if(isset($post_data['dummies']['use_namespace'])){
+			$dummy_class.='use '.$post_data['dummies']['use_namespace'] . ";\n";
+		}
 		$dummy_class.="use SimpleUnitTest\Test;\n";
 		$mm=array();
 		$mtd_names=array();
