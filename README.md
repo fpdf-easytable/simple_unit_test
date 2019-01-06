@@ -4,8 +4,6 @@ Simple Unit Test is a php class to test php code. Why over http? It is highly
 probably you are developing a web application, therefore server configuration is a 
 criteria to be considered.
 
-More than an attempt to be an exhaustive unit test, Simple Unit Test is a proof of the concept.
-The concept that testing should be simple, straight forward and automatic.
 
 
 # Introduction
@@ -167,7 +165,7 @@ class
 
 autoload
 
-    callable function to be used to load your classes as they are needed
+    callable function to be used to load your classes as they are needed.
 
 prepend
 
@@ -177,7 +175,10 @@ prepend
 
 *Description*
 
-    the methods of the classes that we want to overwrite
+    overwrite the methods in $methods of the class $class_name with the user defined callback
+    set in the $method array. You can think of it as overwrite at run time. For example
+    if you need to mute an expensive method of your class or if you want to try a new definition
+    of a method without changing the original.
 
 *Parameters*
 
@@ -193,8 +194,8 @@ methods
 
 use_namespace
 
-	string of semi-colon separated namespaces needed as in the definition of the class
-	class_name
+    string of semi-colon separated namespaces needed as in the definition of the class class_name.
+    Foe example if in the definition of the dummy you are using an object from a particular class.
 
 *Example*
 
@@ -216,9 +217,12 @@ use_namespace
 
 *Description*
 
-   Set the callback function inside the definition of the method $method of the class $class
-   at the position $position.
-
+   Inject a user defined callback function inside the definition of the method $method of 
+   the class $class at the position $position.
+   
+   The idea is to inject a callback function to help you to monitor variables inside a method.
+   (For the moment you will need to output the result into a file).
+ 
 *Parameters*
 
 class
@@ -663,10 +667,13 @@ More examples can be found in the file [demo.php](https://github.com/fpdf-easyta
 
 # Conclusion
 
-Testing your software is important... No, it is not rocket science or and art as people out there
+Testing your software is important. However, it is not rocket science or and art as people out there
 think. You do not need to pass your hand behind your back and under your leds to scratch your nose. 
 
-Simple Unit Test is far from being the swedish knife of the testing units.
+Simple Unit Test is far from being the swedish knife of the testing units. 
+Simple Unit Test is a proof of the concept.
+The concept that testing should be simple, straight forward and automatic.
+
 
 # License
 
