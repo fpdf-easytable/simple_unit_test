@@ -161,7 +161,8 @@ class
 
 *Description*
 
-    set the parameter for spl_autoload_register
+    set the parameters for spl_autoload_register. Example:
+    $test->autoload('my_autoloader', true);
 
 *Parameters*
 
@@ -171,16 +172,15 @@ autoload
 
 prepend
 
-    parameter pass to spl_autoload_register
+    the prepend parameter of spl_autoload_register
 
 **function add_dummies(string $class_name, array $methods, string $use_namespace=null)**
 
 *Description*
 
-    overwrite the methods in $methods of the class $class_name with the user defined callback
-    set in the $method array. You can think of it as overwrite at run time. For example
-    if you need to mute an expensive method of your class or if you want to try a new definition
-    of a method without changing the original.
+    set the methods that will be overwrite at runtime. This can be useful if you 
+    need to mute an expensive method of a class or fake the return of an methos or 
+    if you want to try a new definition of a method without changing the original one.
 
 *Parameters*
 
