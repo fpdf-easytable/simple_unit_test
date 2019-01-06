@@ -179,7 +179,7 @@ prepend
 *Description*
 
     set the methods that will be overwrite at runtime. This can be useful if you 
-    need to mute an expensive method of a class or fake the return of an methos or 
+    need to mute an expensive method of a class or fake the return of a method or 
     if you want to try a new definition of a method without changing the original one.
 
 *Parameters*
@@ -199,6 +199,10 @@ use_namespace
     string of semi-colon separated namespaces needed as in the definition of the class class_name.
     Foe example if in the definition of the dummy you are using an object from a particular class.
 
+use_namespace
+
+    you can pass a specific namespace if it is needed for the definition of any callable.
+
 *Example*
 
 ```
@@ -209,6 +213,7 @@ use_namespace
     $Test->add_dummies('WebService\\WebRegister', ['send'=>'dummy_send']);
 ```
 **_Note_**
+
     1) the parameters use for the callback function are the same of the original definition of
     the method.
     
