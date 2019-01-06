@@ -207,7 +207,15 @@ abstract class Unit_Test{
 			if($assertion=='==='){
 				return $result===$expected;
 			}
-			return call_user_func($assertion, $result, $expected);
+			if(is_callable($assertion, false)){
+				return call_user_func($assertion, $result, $expected);
+			}
+			else{
+				self::$response['Errors'][]=array(
+						'ErrorCode'=>4096,
+						'Message'=>'Function: ' . $assertion .' not found', 
+						);
+			}
 		}
 	}
 	private static function naninf($result){
@@ -290,7 +298,7 @@ abstract class Unit_Test{
 												'Status'=>$status, 
 												'Result'=>self::get_type($result),
 												'Expected Value'=>self::get_type($expected),
-												'Parameters'=>$params,
+												'Parameters'=>$params,//$data[0],
 												'Elapsed Time'=>sprintf('%.6f',$etime),
 												'Memory Usage'=>$mb,
 												'Exception'=>$msg,
@@ -311,11 +319,12 @@ abstract class Unit_Test{
 	public static function dummy_loader($class){
 		if(is_callable(self::$autoload, false)){
 			if(isset(self::$dummies[$class]) || isset(self::$spies[$class])){
-				$dummy_class='';
+				$result='';
 				$post=array(
 								'factory'=>1,
 								'autoload'=>self::$autoload,
 								'class'=>$class,
+								
 								);
 				if(isset(self::$dummies[$class])){
 					$post['dummies']=json_encode(self::$dummies[$class]);
@@ -323,17 +332,24 @@ abstract class Unit_Test{
 				if(isset(self::$spies[$class])){
 					$post['spies']=json_encode(self::$spies[$class]);
 				}
-				self::curly($post, function($ch) use(&$dummy_class){
+				self::curly($post, function($ch) use(&$result){
 					$raw_response=curl_exec($ch);
+					
 					if(curl_errno($ch)==0 ){
 						$status_code=curl_getinfo($ch, CURLINFO_HTTP_CODE);
 						$response=explode("\r\n\r\n", $raw_response);
 						$n=count($response)-1;
-						$dummy_class=trim($response[$n]);
+						$result=json_decode(trim($response[$n]), true);
 					}
 					curl_close($ch);
 				});
-				eval($dummy_class);
+				if(count($result[1])){
+					self::$response['Errors'][]=$result[1][0];
+				}
+				else{
+					$dummy_class=base64_decode($result[0]);
+					eval($dummy_class);
+				}
 			}
 			else{
 				call_user_func(self::$autoload, $class);
@@ -354,12 +370,20 @@ abstract class Unit_Test{
 		else{
 			if(isset($_spies[$data])){
 				$ck=array_shift($_spies[$data]);
-				$str='';
-				foreach($_spies[$data] as $arg){
-					$str.='$'.$arg.',';
+				if(is_callable($ck, false)){	
+					$str='';
+					foreach($_spies[$data] as $arg){
+						$str.='$'.$arg.',';
+					}
+					$str=trim($str, ',');
+					return "Test::spy('{$ck}', " . $str . ");";
 				}
-				$str=trim($str, ',');
-				return "Test::spy('{$ck}', " . $str . ");";
+				else{
+					self::$response['Errors'][]=array(
+						'ErrorCode'=>4096,
+						'Message'=>'Function: ' . $ck .' not found', 
+						);
+				}		
 			}
 			return '';
 		}		
@@ -370,8 +394,16 @@ abstract class Unit_Test{
 		return call_user_func_array($func, $args);
 	}
 	public static function sustitution($func){
-		return '$args=func_get_args();
+		if(is_callable($func, false)){
+			return '$args=func_get_args();
 					return call_user_func_array(\''.$func .'\', $args);';
+		}
+		else{
+			self::$response['Errors'][]=array(
+						'ErrorCode'=>4096,
+						'Message'=>'Function: ' . $func .' not found', 
+						);
+		}
 	}
 	public static function factory($post_data){		
 		if(isset($post_data['dummies'])){
@@ -389,19 +421,20 @@ abstract class Unit_Test{
 		self::get_spy($post_data['spies']);
 		spl_autoload_register($post_data['autoload']);
 		$class= new \ReflectionClass($post_data['class']);	
-		$tmp=explode('\\',$class->name);
-		$class_name=$tmp[count($tmp)-1];
 		$dummy_class='';
-		if($class->getNamespaceName()){	
-			$dummy_class.='namespace ' . $class->getNamespaceName() . ";\n";
-		}
-		$dummy_class.='use SimpleUnitTest\Test;';
-		if(isset($post_data['dummies']['use_namespace'])){
-			$dummy_class.='use '.$post_data['dummies']['use_namespace'] . ';';
-		}
 		$stl=$class->getStartLine()-1;
 		$enl=$class->getEndLine()-1;
 		$file=$class->getFileName();
+		$c = file($file);
+		for($i=0; $i<$stl; $i++){
+			if(strpos($c[$i], 'namespace')!==false){
+				$dummy_class.=$c[$i];
+			}
+			elseif(strpos($c[$i], 'use ')!==false){
+				$dummy_class.=$c[$i];
+			}
+		}
+		$dummy_class.="use SimpleUnitTest\Test;\n";
 		$mm=array();
 		$mtd_names=array();
 		$sp_names=array();
@@ -415,7 +448,6 @@ abstract class Unit_Test{
 		}
 		sort($mm);
 		$k=0;
-	 	$c = file($file);
 		for($i=$stl; $i<=$enl; $i++){
 			if(!isset($mm[$k]) || $i!=$mm[$k]){
 				$dummy_class.=$c[$i];
@@ -424,7 +456,7 @@ abstract class Unit_Test{
 				if(isset($mtd_names[$i])){
 					$dummy_class.=$c[$i];
 					if(strpos($c[$i], '{')===false){
-						$dummy_class.='{';
+						$dummy_class.="{\n";
 					}
 					$dummy_class.=self::sustitution($post_data['dummies']['methods'][$mtd_names[$i]])."
 					}\n";
@@ -433,12 +465,14 @@ abstract class Unit_Test{
 				else{
 					$spm=$sp_names[$mm[$k]];
 					$a=true;
+					$j=1;
 					$dummy_class.=$c[$mm[$k]];
 					if(strpos($c[$mm[$k]], '{')===false){
-						$dummy_class.='{';
+						$dummy_class.="{\n";
+						$j++;
 					}
 					$dummy_class.=self::get_spy("{$spm}:begin") . "\n";
-					for($i=$mm[$k]+1; $i<=$mm[$k+1]; $i++) {
+					for($i=$mm[$k]+$j; $i<=$mm[$k+1]; $i++) {
 						if($a && (strpos(trim($c[$i]), 'return')===0 || $i==$mm[$k+1])){
 							$a=false;
 							$dummy_class.=self::get_spy("{$spm}:end") . "\n";
@@ -450,14 +484,18 @@ abstract class Unit_Test{
 				$k+=2;
 			}
 		}
+		return $result=json_encode([base64_encode($dummy_class),self::$response['Errors']]);
 		return $dummy_class;
 	}
 	abstract public function print_results();
 	abstract protected function __init();
 }
 
+//####################################################################
 
 include __DIR__ . '/extend_simpleunittest.php';
+
+//####################################################################
 
 if(count($_POST)){
 	if(isset($_POST['unit_test'])){
