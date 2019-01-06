@@ -225,11 +225,11 @@ use_namespace
 
 *Description*
 
-   Inject a user defined callback function inside the definition of the method $method of 
-   the class $class at the position $position.
+    Inject a user defined callback function inside the definition of the method $method of 
+    the class $class at the position $position.
    
-   The idea is to inject a callback function to help you to monitor variables inside a method.
-   (For the moment you will need to output the result into a file).
+    The idea is to inject a callback function to help you to monitor variables inside a method.
+    (For the moment you will need to output the result into a file).
  
 *Parameters*
 
