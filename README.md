@@ -252,16 +252,16 @@ callback
 
 ckp1,... etc
 
-	the names of the variables (as many as your callback needs) that you want to pass 
-	to the callback. For example if you	need to pass the variable $my_variable, you 
-	need to pass 'my_variable'.
+    the names of the variables (as many as your callback needs) that you want to pass 
+    to the callback. For example if you	need to pass the variable $my_variable, you 
+    need to pass 'my_variable'.
 
 
 **function test(string $method, array $test_data, string $assertion=null)**
 
 *Description*
 
-   Set the method and parameters for the test
+    Set the method and parameters for the test
 
 *Parameters*	
 
@@ -275,12 +275,13 @@ test_data
     name for the test, expected result, the parametes to be passed to the method to be tested
     
 *Example*
+```
     	 [
            ['Test1', some_result, 1,2,3,a,b,c],
            ['Test2', some_result2, 1,2,3,a],
            ['Test3', some_result3, 1,2,3,e,f,g],
         ];
-    
+```    
 assertion
 
     name of a callable function to be used to assert the result of the method. If it is 
