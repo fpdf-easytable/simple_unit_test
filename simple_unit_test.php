@@ -26,7 +26,7 @@ abstract class Unit_Test{
 				CURLOPT_URL =>'',
 				CURLOPT_RETURNTRANSFER=>true,
 				CURLOPT_ENCODING=>"", 
-				CURLOPT_TIMEOUT=>30,  
+				CURLOPT_TIMEOUT=>30, 
 				CURLOPT_POST=>1
 			  );
 	private $_dummies=array();
@@ -192,16 +192,24 @@ abstract class Unit_Test{
 		if($use_namespace){
 			$this->_dummies[$class_name]['use_namespace']=$use_namespace;
 		}
-		
 		foreach($methods as $k=>$v){
-			$this->_dummies[$class_name]['methods'][$k]=$v;
+			if(is_callable($v, false)){
+				$this->_dummies[$class_name]['methods'][$k]=$v;
+			}
+			else{
+				self::$response['Errors'][]=['ErrorCode'=>4096,'Message'=>"Function: $v not found"];
+			}
 		}
-		$this->meta['Dummies']=$this->_dummies;
 	}
 	public function custom_return(){
 		$args=func_get_args();
 		$method=array_shift($args);
-		$this->_custom_rtn[$this->_meta['Class']][$method]=$args;
+		if(is_callable($args[0], false)){
+			$this->_custom_rtn[$this->_meta['Class']][$method]=$args;
+		}
+		else{
+			self::$response['Errors'][]=['ErrorCode'=>4096,'Message'=>"Function: {$args[0]} not found"];
+		}
 	}
 	public function add_spy(){
 		$args=func_get_args();
@@ -214,8 +222,13 @@ abstract class Unit_Test{
 		if($position!='begin'){
 			$position='end';
 		}
-		$token="{$method}:{$position}";
-		$this->_spies[$class_name][$token]=$args;
+		if(is_callable($args[0], false)){
+			$token="{$method}:{$position}";
+			$this->_spies[$class_name][$token]=$args;
+		}
+		else{
+			self::$response['Errors'][]=['ErrorCode'=>4096,'Message'=>"Function: {$args[0]} not found",];
+		}
 	}
 	private static function evaluation($result, $expected, $assertion=null){
 		if(!$assertion){
@@ -235,10 +248,7 @@ abstract class Unit_Test{
 				return call_user_func($assertion, $result, $expected);
 			}
 			else{
-				self::$response['Errors'][]=array(
-						'ErrorCode'=>4096,
-						'Message'=>'Function: ' . $assertion .' not found', 
-						);
+				self::$response['Errors'][]=['ErrorCode'=>4096,'Message'=>"Function: $assertion not found"];
 			}
 		}
 	}
@@ -262,13 +272,10 @@ abstract class Unit_Test{
 		try{
 			if($input['autoload'][0]){
 				if(is_callable($input['autoload'][0], false)){
-					spl_autoload_register('self::dummy_loader', $throw=true, $input['autoload'][1]);
+					spl_autoload_register('self::dummy_loader', true, $input['autoload'][1]);
 				}
 				else{
-					self::$response['Errors'][]=array(
-						'ErrorCode'=>4096,
-						'Message'=>'Function: ' . $input['autoload'][0] .' not found', 
-					);
+					self::$response['Errors'][]=['ErrorCode'=>4096,'Message'=>"Function: {$input['autoload'][0]} not found"];
 				}
 			}
 			$reflexion_class= new \ReflectionClass($input['meta']['Class']);	
@@ -320,7 +327,7 @@ abstract class Unit_Test{
 												'Status'=>$status, 
 												'Result'=>self::get_type($result),
 												'Expected Value'=>self::get_type($expected),
-												'Parameters'=>$params,//$data[0],
+												'Parameters'=>$params,
 												'Elapsed Time'=>sprintf('%.6f',$etime),
 												'Memory Usage'=>$mb,
 												'Exception'=>$msg,
@@ -342,6 +349,7 @@ abstract class Unit_Test{
 		if(isset(self::$dummies[$class]) || isset(self::$spies[$class]) || count(self::$custom_rtn[$class])){
 			$result='';
 			$post=['factory'=>1,'autoload'=>self::$autoload,'class'=>$class];
+
 			if(isset(self::$dummies[$class])){
 				$post['dummies']=json_encode(self::$dummies[$class]);
 			}
@@ -376,46 +384,30 @@ abstract class Unit_Test{
 	private static function set_custom_rtn($method){
 		if(isset(self::$local_custom_rtn[$method])){
 			$ck=array_shift(self::$local_custom_rtn[$method]);
-			if(is_callable($ck, false)){	
-				$str='';
-				foreach(self::$local_custom_rtn[$method] as $arg){
-					$str.='$'.$arg.',';
-				}
-				$str=trim($str, ',');
-				if($str){
-					$str=", " . $str;
-				}
-				return "return call_user_func('{$ck}'" . $str . ");\n";
+			$str='';
+			foreach(self::$local_custom_rtn[$method] as $arg){
+				$str.='$'.$arg.',';
 			}
-			else{
-				self::$response['Errors'][]=array(
-					'ErrorCode'=>4096,
-					'Message'=>'Function: ' . $ck .' not found', 
-					);
-			}		
+			$str=trim($str, ',');
+			if($str){
+				$str=", " . $str;
+			}
+			return "return call_user_func('{$ck}'" . $str . ");\n";		
 		}
 		return '';
 	}
 	private static function get_spy($data){
 		if(isset(self::$local_spies[$data])){
 			$ck=array_shift(self::$local_spies[$data]);
-			if(is_callable($ck, false)){	
-				$str='';
-				foreach(self::$local_spies[$data] as $arg){
-					$str.='$'.$arg.',';
-				}
-				$str=trim($str, ',');
-				if($str){
-					$str=", " . $str;
-				}
-				return "Test::spy('{$ck}'" . $str . ");\n";
+			$str='';
+			foreach(self::$local_spies[$data] as $arg){
+				$str.='$'.$arg.',';
 			}
-			else{
-				self::$response['Errors'][]=array(
-					'ErrorCode'=>4096,
-					'Message'=>'Function: ' . $ck .' not found', 
-					);
-			}		
+			$str=trim($str, ',');
+			if($str){
+				$str=", " . $str;
+			}
+			return "Test::spy('{$ck}'" . $str . ");\n";
 		}
 		return '';
 	}
@@ -429,16 +421,8 @@ abstract class Unit_Test{
 	}
 	private static function sustitution($method){
 		if(isset(self::$local_dummies[$method])){
-			if(is_callable(self::$local_dummies[$method], false)){
-				return '$args=func_get_args();
+			return '$args=func_get_args();
 					return call_user_func_array(\''. self::$local_dummies[$method] .'\', $args);' . "\n";
-			}
-			else{
-				self::$response['Errors'][]=array(
-						'ErrorCode'=>4096,
-						'Message'=>'Function: ' . self::$local_dummies[$method] .' not found', 
-						);
-			}
 		}
 		return '';
 	}
@@ -516,7 +500,6 @@ abstract class Unit_Test{
 						$j++;
 					}
 					$dummy_class.=self::get_spy("{$spm}:begin") . "\n";
-					
 					for($i=$mm[$k]+$j; $i<=$mm[$k+1]; $i++) {
 						
 						if($a && (strpos(trim($c[$i]), 'return')===0 || $i==$mm[$k+1])){
@@ -525,7 +508,6 @@ abstract class Unit_Test{
 							$dummy_class.=self::get_spy("{$spm}:end");
 						}
 						$dummy_class.=$c[$i];
-						
 					}
 					$i--;
 				}
