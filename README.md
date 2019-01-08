@@ -564,9 +564,7 @@ function calculator_autoloader($name) {
 function mock_input(){
 	static $a=0;
 	$b=[12,16,22,24];
-	$c=$a;
-	$a++;
-	return $b[$c];
+	return $b[$a++];
 }
 
 $Test=new Test('Math\CalculatorZ');
