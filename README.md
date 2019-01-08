@@ -44,8 +44,10 @@ he will still get valid data with the wrong test.
 # Features
 
 - No need to extend any class
-- Dummy objects (test doubles)
-- Set custom definition of assertion function to be used for the test;
+- Dummy methods
+- Spy injection
+- Custom returns
+- Set custom definition of assertion function to be used for the test
 - Ability to test private or public methods
 
 
@@ -229,7 +231,7 @@ use_namespace
     the class $class at the position $position.
    
     The idea is to inject a callback function to help you to monitor variables inside a method.
-    (For the moment you will need to output the result into a file).
+    The output of the call back is captured and display in the Spy log section.
  
 *Parameters*
 
@@ -253,9 +255,45 @@ callback
 ckp1,... etc
 
     the names of the variables (as many as your callback needs) that you want to pass 
-    to the callback. For example if you	need to pass the variable $my_variable, you 
+    to the callback. For example if you need to pass the variable $my_variable, you 
     need to pass 'my_variable'.
 
+
+**function custom_return(string $method, string $callback, string $ckp1, string $ckp2...)**
+
+*Description*
+
+    Sometimes a method does not return any value. How do you test a method that does not return anything?
+    Seting a custom return inject a callback into the method you want to test, and it is the
+    return of this method that is can be use to test your method against to. For example consider a counter
+
+    private function my_counter(){
+    	$this->counter++;
+    }
+
+    Obviously that method does not return anything, so setting a custom return we have something like
+    
+    private function my_counter(){
+       $this->counter++;
+       return my_callback($this->counter);
+    }
+
+*Parameters*
+
+method
+
+    the name of the method of the class that is being tested
+
+    
+callback
+
+    a callable function that you want to use to return a value
+
+ckp1,... etc
+
+    the names of the variables (as many as your callback needs) that you want to pass 
+    to the callback. For example if you need to pass the variable $my_variable, you 
+    need to pass 'my_variable'.
 
 **function test(string $method, array $test_data, string $assertion=null)**
 
