@@ -21,7 +21,6 @@ class Test extends Unit_Test
 			<br/>Parameters: ' . $this->meta['Parameters'] . '<br/>';
 		
 		foreach($this->result as $result){
-		
 			if(count($result['Errors'])){
 				$html.='<tr><td colspan="8"><b>Error</b></td></tr>';
 				foreach($result['Errors'] as $error){
@@ -67,7 +66,13 @@ class Test extends Unit_Test
 							</tr>';
 					}
 				}
-			
+				
+				if(isset($result['SpyLog'])){
+					$html.='<tr style="height:2.5em;"><td colspan="8"><b>Spies</b></td></tr>';
+					foreach($result['SpyLog'] as $spy=>$data){						
+						$html.="<tr><td><b>{$spy}</b></td><td colspan=\"7\">". implode('<br/>', $data) ."</td></tr>";
+					}
+				}
 			}
 		}
 		$html.='</table>';
