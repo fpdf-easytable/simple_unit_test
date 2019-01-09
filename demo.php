@@ -19,6 +19,18 @@ function class_loader2($class){
 
 $Test=new Test('Demo');
 $Test->autoload('class_loader2');
+
+
+function dnt(){
+	return;
+}
+$Test->add_dummies('Helper', ['do_something'=>'dnt']);
+
+function gd($x){
+	return $x;
+}
+$Test->add_spy('Demo','get_old', 'end', 'gd', 'this->age');
+
 $test_data=[
 	['Test1', 'Elephant', 'name'],
 	['Test2', 'Very big', 'size'],
@@ -27,8 +39,25 @@ $test_data=[
 ];
 $Test->test('get_data', $test_data);
 
-$test_data=[['Test1', null]];
-$Test->test('print_to_file', $test_data);
+
+function ckf($file){
+	clearstatcache();
+	$n=0;
+	if(file_exists($file)){
+		$n=filesize($file);
+		unlink($file);
+	}
+	return $n;
+}
+$Test->custom_return('print_to_file','ckf','output');
+
+$test_data=[
+	['Test1', 5, 'Hello'],
+	['Test2', 11, 'Hello World'],
+	['Test3', 9, 'Something'],
+	['Test4', 13, 'Something new'],
+];
+$Test->test('print_to_file', $test_data, '===');
 
 echo $Test->print_results();
 

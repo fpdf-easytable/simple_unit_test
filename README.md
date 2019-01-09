@@ -199,7 +199,7 @@ methods
 use_namespace
 
     string of semi-colon separated namespaces needed as in the definition of the class class_name.
-    Foe example if in the definition of the dummy you are using an object from a particular class.
+    For example if in the definition of the dummy you are using an object from a particular class.
 
 use_namespace
 
@@ -231,7 +231,7 @@ use_namespace
     the class $class at the position $position.
    
     The idea is to inject a callback function to help you to monitor variables inside a method.
-    The output of the call back is captured and display in the Spy log section.
+    The output of the callback is captured and display in the Spy log section.
  
 *Parameters*
 
@@ -264,8 +264,8 @@ ckp1,... etc
 *Description*
 
     Sometimes a method does not return any value. How do you test a method that does not return anything?
-    Seting a custom return inject a callback into the method you want to test, and it is the
-    return of this method that is can be use to test your method against to. For example consider a counter
+    Setting a custom return inject a callback into the method you want to test, and it is the
+    return of this method that can be used to test your method against to. For example consider a counter
 
     private function my_counter(){
     	$this->counter++;
@@ -324,7 +324,7 @@ assertion
 
     name of a callable function to be used to assert the result of the method. If it is 
     omitted, the assertion is via "result==expected_value", if you need to assert '==='
-    pass the string '===' as assetion parameter.
+    pass the string '===' as assertion parameter.
 
 
 *Example*
@@ -349,7 +349,6 @@ assertion
     include 'simple_unit_test.php';
     use SimpleUnitTest\Test;
     Test::Set_URL('URL/of/your/test-suit');
-    include 'header.html.php';
 ```
 
 2. create a Test object
@@ -396,7 +395,23 @@ test, run the test
 
 # Examples
 
-*Example 1.
+*Example 1. This is a good example were we can put in practice the usage of dummies, 
+spies and custom retutn.
+
+```
+// file: helper_class.php
+<?php
+class Helper{
+	public $sleeping;
+	function __construct($sleep){
+		$this->sleeping=$sleep;
+	}
+	function do_something(){
+		sleep($this->sleeping);
+	}
+}
+?>
+```
 
 ```
 // file: demo_class.php
@@ -404,15 +419,17 @@ test, run the test
 class Demo {
 	
    private $name, $last_name, $age, $data;
+   
 	public function __construct(){
 		$this->name='Elephant';
 		$this->size='Very big';
 		$this->weight='Very heavy';
 		$this->age=0;
-		$this->data=new Helper('Hola');
+		$this->data=new Helper(5);
 	}
 	
 	public function get_data($str){
+		$this->data->do_something();
 		$this->get_old();
 		if(isset($this->$str)){
 			return $this->$str;
@@ -424,12 +441,12 @@ class Demo {
 	
 	public function get_old(){
 		$this->age++;
-		return $this->age;
 	}
 
-	public function print_to_file(){
-		$h=fopen('/tmp/zzzz_demo', 'w');
-		fwrite($h, var_export($this, true));
+	public function print_to_file($str){
+		$output='/tmp/zzzz_demo';
+		$h=fopen($output, 'a');
+		fwrite($h, $str);
 		fclose($h);
 	}
 }
@@ -458,6 +475,24 @@ function class_loader2($class){
 
 $Test=new Test('Demo');
 $Test->autoload('class_loader2');
+
+/*
+Prepare test for Demo::get_data. 
+Since Demo::get_data calls Helper::do_something and this is a expensive call (5secs)
+we mute it with a dummy. Also we want to monitor the behaviour of the property Demo::age
+*/
+
+function dnt(){
+	return;
+}
+$Test->add_dummies('Helper', ['do_something'=>'dnt']);
+
+
+function gd($x){
+	return $x;
+}
+$Test->add_spy('Demo','get_old', 'end', 'gd', 'this->age');
+
 $test_data=[
 	['Test1', 'Elephant', 'name'],
 	['Test2', 'Very big', 'size'],
@@ -466,8 +501,29 @@ $test_data=[
 ];
 $Test->test('get_data', $test_data);
 
-$test_data=[['Test1', null]];
-$Test->test('print_to_file', $test_data);
+/*
+Prepare test for Demo::print_to_file.
+Since this method does not return anything, we want to check the size of the output file.
+*/
+
+function ckf($file){
+	clearstatcache();
+	$n=0;
+	if(file_exists($file)){
+		$n=filesize($file);
+		unlink($file);
+	}
+	return $n;
+}
+$Test->custom_return('print_to_file','ckf','output');
+
+$test_data=[
+	['Test1', 5, 'Hello'],
+	['Test2', 11, 'Hello World'],
+	['Test3', 9, 'Something'],
+	['Test4', 13, 'Something new'],
+];
+$Test->test('print_to_file', $test_data, '===');
 
 echo $Test->print_results();
 ?>

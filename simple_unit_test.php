@@ -25,8 +25,8 @@ abstract class Unit_Test{
 	protected static $CURL_OPTIONS=array(
 				CURLOPT_URL =>'',
 				CURLOPT_RETURNTRANSFER=>true,
-				CURLOPT_ENCODING=>"", 
-				CURLOPT_TIMEOUT=>30, 
+				CURLOPT_ENCODING=>"",
+				CURLOPT_TIMEOUT=>30,
 				CURLOPT_POST=>1
 			  );
 	private $_dummies=array();
@@ -155,8 +155,7 @@ abstract class Unit_Test{
 				}
 			}
 			else {
-				$result['ResponseCode']=curl_errno($ch);
-				$result['Message']=curl_error($ch);
+				$result['Errors'][]=['ResponseCode'=>curl_errno($ch),'Message'=>curl_error($ch)];
 			}
 			curl_close($ch);
 			if(isset($result['object_instance'])){
@@ -165,6 +164,10 @@ abstract class Unit_Test{
 			}
 			$this->result[]=$result;
 		});
+		if($n=count($this->result)){
+			$this->result[$n-1]['Errors']=array_merge($this->result[$n-1]['Errors'], self::$response['Errors']);
+			self::$response['Errors']=array();
+		}
 	}
 	public function __construct(){
 		$params=func_get_args();
@@ -227,7 +230,7 @@ abstract class Unit_Test{
 			$this->_spies[$class_name][$token]=$args;
 		}
 		else{
-			self::$response['Errors'][]=['ErrorCode'=>4096,'Message'=>"Function: {$args[0]} not found",];
+			self::$response['Errors'][]=array('ErrorCode'=>4096,'Message'=>"Function: {$args[0]} not found",);
 		}
 	}
 	private static function evaluation($result, $expected, $assertion=null){
@@ -349,7 +352,6 @@ abstract class Unit_Test{
 		if(isset(self::$dummies[$class]) || isset(self::$spies[$class]) || count(self::$custom_rtn[$class])){
 			$result='';
 			$post=['factory'=>1,'autoload'=>self::$autoload,'class'=>$class];
-
 			if(isset(self::$dummies[$class])){
 				$post['dummies']=json_encode(self::$dummies[$class]);
 			}
@@ -471,8 +473,10 @@ abstract class Unit_Test{
 				$mtd_names[$method->getStartLine()-1]=$method->name;
 			}
 			$sp_names[$method->getStartLine()-1]=$method->name;
+			
 			$mm[]=$method->getStartLine()-1;
 			$mm[]=$method->getEndLine()-1;
+			
 		}
 		sort($mm);
 		$k=0;
@@ -500,6 +504,7 @@ abstract class Unit_Test{
 						$j++;
 					}
 					$dummy_class.=self::get_spy("{$spm}:begin") . "\n";
+					
 					for($i=$mm[$k]+$j; $i<=$mm[$k+1]; $i++) {
 						
 						if($a && (strpos(trim($c[$i]), 'return')===0 || $i==$mm[$k+1])){
@@ -508,6 +513,7 @@ abstract class Unit_Test{
 							$dummy_class.=self::get_spy("{$spm}:end");
 						}
 						$dummy_class.=$c[$i];
+						
 					}
 					$i--;
 				}

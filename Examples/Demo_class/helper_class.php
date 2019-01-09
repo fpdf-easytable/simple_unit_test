@@ -1,14 +1,14 @@
 <?php
 
-	class Helper{
-		public $name;
-		function __construct($name){
-			$this->name=$name;
-		}
-		function get_name(){
-			return $this->name;
-		}
+class Helper{
+	public $sleeping;
+	function __construct($sleep){
+		$this->sleeping=$sleep;
 	}
+	function do_something(){
+		sleep($this->sleeping);
+	}
+}
 
 
 
