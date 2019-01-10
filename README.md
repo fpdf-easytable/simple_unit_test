@@ -395,7 +395,7 @@ test, run the test
 
 # Examples
 
-*Example 1. This is a good example were we can put in practice the usage of dummies, 
+*Example 1. This is a good example where we can put in practice the usage of dummies, 
 spies and custom retutn.
 
 ```
@@ -760,7 +760,7 @@ echo $Test->print_results();
 
 **_NOTE_**
 
-Of course you can make a class where each method is a test (a la phpinit)
+Of course you can make a class where each method is a test (a la phpunit)
 and test those method with Simple Unit Test.
 
 **_More examples_**
@@ -770,7 +770,7 @@ More examples can be found in the file [demo.php](https://github.com/fpdf-easyta
 # Conclusion
 
 Testing your software is important. However, it is not rocket science or an art as people out there
-think. You do not need to pass your hand behind your back and under your leds to scratch your nose. 
+think. You do not need to pass your hand behind your back and under your legs to scratch your nose. 
 
 Simple Unit Test is far from being the swedish knife of the testing units. 
 Simple Unit Test is a proof of the concept.
