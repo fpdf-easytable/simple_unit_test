@@ -386,6 +386,11 @@ can be defined in a a file and use the public method Test::set_source to include
        
    ?>
 ```
+
+and in the test file:
+```
+    $Test->source_file('source_file.php');
+```
    
 
 4. add autoload and dummies if needed
