@@ -51,7 +51,6 @@ he will still get valid data with the wrong test.
 - Ability to test private or public methods.
 
 
-
 # Comparisons
 
 Suppose we have a class HelloWorld
@@ -376,7 +375,7 @@ assertion
 ```
 
 3. define all the callable functions (autoload, dummies, spies, custom_return). These functions
-can be define in a a file and use the public method Test::set_source to include it in the test.
+can be defined in a a file and use the public method Test::set_source to include it in the test.
 ```
     //source_file.php
     <?php
