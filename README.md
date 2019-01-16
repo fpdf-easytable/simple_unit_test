@@ -812,16 +812,15 @@ class XmlTest extends TestCase
 ```
 With Simple Unit Test:
 
+source_file.php:
 ```
 <?php
-include '../../Unit_test/simple_unit_test.php';
-use SimpleUnitTest\Test;
-Test::Set_URL('http://localhost/ZPhpSpreadsheet/Test/prueba.php');
 
 function autoloader($class){
 	$name = str_replace('\\', '/', $class) . '.php';
 	$name=strtr($name, ['PhpOffice/'=>'']);
    $srcPath = __DIR__ . '/../src/' . $name;
+	
    if (is_file($srcPath)){
    	include_once $srcPath;
    }
@@ -829,6 +828,7 @@ function autoloader($class){
    	include_once __DIR__ . '/' . $name;
    }
 }
+
 
 function assertion($result, $expected){
 	static $a=0;
@@ -844,8 +844,20 @@ function assertion($result, $expected){
 	}
 }
 
+?>
+
+```
+
+Test file:
+```
+<?php
+include '../../Unit_test/simple_unit_test.php';
+use SimpleUnitTest\Test;
+Test::Set_URL('http://localhost/ZPhpSpreadsheet/Test/prueba.php');
+
 $Test=new Test('PhpOffice\PhpSpreadsheet\Reader\Xml');
 $Test->autoload('autoloader');
+$Test->source_file('source_file.php');
 
 // Begin test. Method: load
 
