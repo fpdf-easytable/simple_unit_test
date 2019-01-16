@@ -432,11 +432,11 @@ test, run the test
 
 # Examples
 
-*Example 1. This is a good example where we can put in practice the usage of dummies, 
+*Example 1*. This is a good example where we can put in practice the usage of dummies, 
 spies and custom retutn.
 
+File: helper_class.php
 ```
-// file: helper_class.php
 <?php
 class Helper{
 	public $sleeping;
@@ -450,8 +450,8 @@ class Helper{
 ?>
 ```
 
+File: demo_class.php
 ```
-// file: demo_class.php
 <?php
 class Demo {
 	
@@ -488,12 +488,11 @@ class Demo {
 	}
 }
 ?>
-//end of file
+```
 
-//=========================================================
+Test suit file for Demo class:
 
-// test suit for Demo class
-
+```
 <?php
 include 'simple_unit_test.php';
 use SimpleUnitTest\Test;
@@ -564,18 +563,12 @@ $Test->test('print_to_file', $test_data, '===');
 
 echo $Test->print_results();
 ?>
-
-// end file
-//=========================================================
-
 ```
 
-Using source file for all the callables functions.
+We can have a cleaner test suit by using a source file for all the callables functions.
+
+File source_file.php
 ```
-//=========================================================
-
-//start source_file.php
-
 <?php
 // define a function to load the classes we need
 
@@ -606,12 +599,9 @@ function ckf($file){
 	return $n;
 }
 ?>
-// end file
-
-//=========================================================
-
-// test suit for Demo class
-
+```
+Test suit for Demo class:
+```
 <?php
 include 'simple_unit_test.php';
 use SimpleUnitTest\Test;
