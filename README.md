@@ -647,9 +647,6 @@ $Test->test('print_to_file', $test_data, '===');
 
 echo $Test->print_results();
 ?>
-
-// end file
-//=========================================================
 ```
 
 * Result:
