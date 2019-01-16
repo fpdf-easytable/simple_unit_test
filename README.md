@@ -43,12 +43,12 @@ he will still get valid data with the wrong test.
 
 # Features
 
-- No need to extend any class
-- Dummy methods
-- Spy injection
-- Custom returns
-- Set custom definition of assertion function to be used for the test
-- Ability to test private or public methods
+- No need to extend any class.
+- Dummy methods.
+- Spy injection.
+- Custom returns.
+- Set custom definition of assertion function to be used for the test.
+- Ability to test private or public methods.
 
 
 
@@ -153,11 +153,30 @@ Compos---what? Seriously, since when the php include statement and autoload beca
 
 *Description*
 
+    create a Test object.
+
+*Parameters*
+
 class
 
     the name of the class (fully qualified name) to be tested. Example:
     new Test('My\Super\Drupper\Class');
     
+
+**function source_file( string $source_file)**
+
+*Description*
+
+    set the source file (where the callable functions are defined). 
+
+*Parameters*
+
+source_file
+
+    file (including path if needed) of the source file. Example:
+    $Test->source_file(__DIR__.'/test_source.php');
+    another example:
+    $Test->source_file('demo_test_suit.php');
 
 **function autoload( string $autoload, bool $prepend=false)**
 
@@ -356,7 +375,21 @@ assertion
     $Test=new Test('Demo', constructor-parameters-if-any);
 ```
 
-3. add autoload and dummies if needed
+3. define all the callable functions (autoload, dummies, spies, custom_return). These functions
+can be define in a a file and use the public method Test::set_source to include it in the test.
+```
+    //source_file.php
+    <?php
+       function my_autoload($class){
+          //some code
+       }
+       //more definitions
+       
+   ?>
+```
+   
+
+4. add autoload and dummies if needed
 ```
     $Test->autoload('my_autoloader','prepend');
     $Test->add_dummies('someclass',array(
@@ -369,7 +402,7 @@ assertion
                      			));                     			
 ```
 
-4. set the relevant test cases
+5. set the relevant test cases
 ```
     $test_method1=[
                ['Test1',expected, rest-of-arguments], // coma separated
@@ -387,7 +420,7 @@ assertion
     $Test->test('Some_Method2', $test_method2);
 ```
 
-5. when you are done setting your test cases for all the methods of your class you want to
+6. when you are done setting your test cases for all the methods of your class you want to
 test, run the test
 ```
     echo $Test->print_results();
@@ -532,6 +565,99 @@ echo $Test->print_results();
 //=========================================================
 
 ```
+
+Using source file for all the callables functions.
+```
+//=========================================================
+
+//start source_file.php
+
+<?php
+// define a function to load the classes we need
+
+function class_loader2($class){
+	$base=strtolower($class);
+	$base.='_class.php';
+	$class='Demo_class/'.$base;
+	if(file_exists($class)){		
+		include_once $class;
+	}	
+}
+
+function dnt(){
+	return;
+}
+
+function gd($x){
+	return $x;
+}
+
+function ckf($file){
+	clearstatcache();
+	$n=0;
+	if(file_exists($file)){
+		$n=filesize($file);
+		unlink($file);
+	}
+	return $n;
+}
+?>
+// end file
+
+//=========================================================
+
+// test suit for Demo class
+
+<?php
+include 'simple_unit_test.php';
+use SimpleUnitTest\Test;
+Test::Set_URL('http://path/to/this/test/demo_class_test.php')
+
+$Test=new Test('Demo');
+$Test->autoload('class_loader2');
+$Test->source_file(path/to/source_file.php);
+
+/*
+Prepare test for Demo::get_data. 
+Since Demo::get_data calls Helper::do_something and this is a expensive call (5secs)
+we mute it with a dummy. Also we want to monitor the behaviour of the property Demo::age
+*/
+
+$Test->add_dummies('Helper', ['do_something'=>'dnt']);
+
+$Test->add_spy('Demo','get_old', 'end', 'gd', 'this->age');
+
+$test_data=[
+	['Test1', 'Elephant', 'name'],
+	['Test2', 'Very big', 'size'],
+	['Test3', 'Heavy', 'weight'],
+	['Test4', 4, 'age'],	
+];
+$Test->test('get_data', $test_data);
+
+/*
+Prepare test for Demo::print_to_file.
+Since this method does not return anything, we want to check the size of the output file.
+*/
+
+
+$Test->custom_return('print_to_file','ckf','output');
+
+$test_data=[
+	['Test1', 5, 'Hello'],
+	['Test2', 11, 'Hello World'],
+	['Test3', 9, 'Something'],
+	['Test4', 13, 'Something new'],
+];
+$Test->test('print_to_file', $test_data, '===');
+
+echo $Test->print_results();
+?>
+
+// end file
+//=========================================================
+```
+
 * Result:
 
 ![Example1](http://212.67.221.142/img/example1.png)

@@ -2,7 +2,7 @@
 /*********************************************************************
 * Unit test                                                          *
 *                                                                    *
-* Version: 1.0                                                       *
+* Version: 1.5                                                       *
 * Date:    02-11-2018                                                *
 * Author:  Dan Machado                                               *
 * Require  php 7 or above                                            *
@@ -14,6 +14,7 @@ error_reporting(E_ALL);
 
 abstract class Unit_Test{
 	private static $url;
+	private static $source='';
 	private static $response=array('Errors'=>array());
 	private static $autoload;
 	private static $dummies;
@@ -29,6 +30,7 @@ abstract class Unit_Test{
 				CURLOPT_TIMEOUT=>30,
 				CURLOPT_POST=>1
 			  );
+	private $source_file='';
 	private $_dummies=array();
 	private $_spies=array();
 	private $_autoload=array();
@@ -77,6 +79,21 @@ abstract class Unit_Test{
 			die("Please set a URL for this project");
 		}
 		self::$url=$_url;
+	}
+	private static function set_source($_source=null){
+		if($_source){
+			self::$source=$_source;
+		}
+		if(self::$source){
+			include_once self::$source;
+		}
+	}
+	public function source_file($_source){
+		if(!$_source || !file_exists($_source)){
+			die("The source file \"{$_source}\" for this project does not exist.");
+		}
+		$this->source_file=$_source;
+		include_once $_source;
 	}
 	public static function Uncaught_Exception($exception){
 		$err=$exception->getMessage();
@@ -135,6 +152,7 @@ abstract class Unit_Test{
 		$post['test_data']=$test_data;
 		$post['assertion']=$assertion;
 		$post['url']=self::$url;
+		$post['source']=$this->source_file;
 		$post['object_instance']=&$this->object_instance;
 		$post['meta']=$this->_meta;
 		$post['dummies']=$this->_dummies;
@@ -272,6 +290,7 @@ abstract class Unit_Test{
 		self::$dummies=$input['dummies'];
 		self::$spies=$input['spies'];
 	 	self::$custom_rtn=$input['custom_rtn'];
+	 	self::set_source($input['source']);
 		try{
 			if($input['autoload'][0]){
 				if(is_callable($input['autoload'][0], false)){
@@ -349,9 +368,10 @@ abstract class Unit_Test{
 		self::outPut();
 	}
 	public static function dummy_loader($class){
+		self::set_source();
 		if(isset(self::$dummies[$class]) || isset(self::$spies[$class]) || count(self::$custom_rtn[$class])){
 			$result='';
-			$post=['factory'=>1,'autoload'=>self::$autoload,'class'=>$class];
+			$post=['factory'=>1,'autoload'=>self::$autoload,'class'=>$class, 'source'=>self::$source];
 			if(isset(self::$dummies[$class])){
 				$post['dummies']=json_encode(self::$dummies[$class]);
 			}
@@ -440,6 +460,7 @@ abstract class Unit_Test{
 		if(isset($post_data['custom_rtn'])){
 			self::$local_custom_rtn=json_decode($post_data['custom_rtn'], true);
 		}
+		self::set_source($post_data['source']);
 		spl_autoload_register($post_data['autoload']);
 		$class= new \ReflectionClass($post_data['class']);	
 		$dummy_class='';

@@ -3,32 +3,14 @@ include 'simple_unit_test.php';
 use SimpleUnitTest\Test;
 Test::Set_URL('http://localhost/UnitTest/demo.php');
 
-
-//####################################################################
-
-function class_loader2($class){
-	$base=strtolower($class);
-	$base.='_class.php';
-	$class='Examples/Demo_class/'.$base;
-	if(file_exists($class)){		
-		include_once $class;
-	}	
-}
-
 //====================================================================
 
 $Test=new Test('Demo');
 $Test->autoload('class_loader2');
+$Test->source_file('source_file.php');
 
-
-function dnt(){
-	return;
-}
 $Test->add_dummies('Helper', ['do_something'=>'dnt']);
 
-function gd($x){
-	return $x;
-}
 $Test->add_spy('Demo','get_old', 'end', 'gd', 'this->age');
 
 $test_data=[
@@ -39,16 +21,6 @@ $test_data=[
 ];
 $Test->test('get_data', $test_data);
 
-
-function ckf($file){
-	clearstatcache();
-	$n=0;
-	if(file_exists($file)){
-		$n=filesize($file);
-		unlink($file);
-	}
-	return $n;
-}
 $Test->custom_return('print_to_file','ckf','output');
 
 $test_data=[
@@ -68,6 +40,8 @@ If you want to test functions wrap them in a class
 
 $Test=new Test('Wrapper');
 $Test->autoload('class_loader2');
+$Test->source_file('source_file.php');
+
 $test_data=[
 	['Test1', 'Hello world']
 ];
@@ -80,6 +54,7 @@ echo $Test->print_results();
 //*
 $Test=new Test('RemoteConnect');
 $Test->autoload('class_loader2');
+$Test->source_file('source_file.php');
 
 $test_data=[
 	['Test1', true, 'www.google.co.uk']
