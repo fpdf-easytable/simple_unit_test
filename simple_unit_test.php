@@ -8,7 +8,6 @@
 * Require  php 7 or above                                            *
 **********************************************************************/
 namespace SimpleUnitTest;
-
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -26,8 +25,8 @@ abstract class Unit_Test{
 	protected static $CURL_OPTIONS=array(
 				CURLOPT_URL =>'',
 				CURLOPT_RETURNTRANSFER=>true,
-				CURLOPT_ENCODING=>"",
-				CURLOPT_TIMEOUT=>30,
+				CURLOPT_ENCODING=>"", 
+				CURLOPT_TIMEOUT=>30,  
 				CURLOPT_POST=>1
 			  );
 	private $source_file='';
@@ -418,7 +417,7 @@ abstract class Unit_Test{
 		}
 		return '';
 	}
-	private static function get_spy($data){
+	private static function get_spy($class, $method, $data){
 		if(isset(self::$local_spies[$data])){
 			$ck=array_shift(self::$local_spies[$data]);
 			$str='';
@@ -429,17 +428,19 @@ abstract class Unit_Test{
 			if($str){
 				$str=", " . $str;
 			}
-			return "Test::spy('{$ck}'" . $str . ");\n";
+			return "Test::spy('{$class}', '{$method}','{$ck}'" . $str . ");\n";
 		}
 		return '';
 	}
 	public static function spy(){
 		$args=func_get_args();
+		$class=array_shift($args);
+		$method=array_shift($args);
 		$func=array_shift($args);
-		if(!isset(self::$response['SpyLog'][$func])){
-			self::$response['SpyLog'][$func]=array();
+		if(!isset(self::$response['SpyLog'][$class.'::'.$method][$func])){
+			self::$response['SpyLog'][$class.'::'.$method][$func]=array();
 		}
-		self::$response['SpyLog'][$func][]=call_user_func_array($func, $args);
+		self::$response['SpyLog'][$class.'::'.$method][$func][]=call_user_func_array($func, $args);
 	}
 	private static function sustitution($method){
 		if(isset(self::$local_dummies[$method])){
@@ -463,10 +464,11 @@ abstract class Unit_Test{
 		self::set_source($post_data['source']);
 		spl_autoload_register($post_data['autoload']);
 		$class= new \ReflectionClass($post_data['class']);	
-		$dummy_class='';
+		$class_name=$class->getName();
 		$stl=$class->getStartLine()-1;
 		$enl=$class->getEndLine()-1;
 		$file=$class->getFileName();
+		$dummy_class='';
 		$c = file($file);
 		for($i=0; $i<$stl; $i++){
 			if(strpos($c[$i], 'namespace')!==false){
@@ -494,10 +496,8 @@ abstract class Unit_Test{
 				$mtd_names[$method->getStartLine()-1]=$method->name;
 			}
 			$sp_names[$method->getStartLine()-1]=$method->name;
-			
 			$mm[]=$method->getStartLine()-1;
 			$mm[]=$method->getEndLine()-1;
-			
 		}
 		sort($mm);
 		$k=0;
@@ -524,17 +524,14 @@ abstract class Unit_Test{
 						$dummy_class.="{\n";
 						$j++;
 					}
-					$dummy_class.=self::get_spy("{$spm}:begin") . "\n";
-					
+					$dummy_class.=self::get_spy($class_name, $spm, "{$spm}:begin") . "\n";
 					for($i=$mm[$k]+$j; $i<=$mm[$k+1]; $i++) {
-						
 						if($a && (strpos(trim($c[$i]), 'return')===0 || $i==$mm[$k+1])){
 							$a=false;
 							$dummy_class.=self::set_custom_rtn($spm);
-							$dummy_class.=self::get_spy("{$spm}:end");
+							$dummy_class.=self::get_spy($class_name, $spm, "{$spm}:end");
 						}
 						$dummy_class.=$c[$i];
-						
 					}
 					$i--;
 				}
@@ -547,27 +544,19 @@ abstract class Unit_Test{
 	abstract public function print_results();
 	abstract protected function __init();
 }
-
-//####################################################################
-
 include __DIR__ . '/extend_simpleunittest.php';
-
-//####################################################################
-
 if(count($_POST)){
 	if(isset($_POST['unit_test'])){
 		register_shutdown_function('SimpleUnitTest\Test::Fatal_Error', E_ALL);
 		set_error_handler('SimpleUnitTest\Test::Fatal_Error', E_ALL);
 		set_exception_handler('SimpleUnitTest\Test::Uncaught_Exception');
 		Test::run_test();
-		exit;
 	}
 	elseif(isset($_POST['factory'])){
 		echo Test::factory();
-		exit;
 	}
+	exit;
 }
-
 include __DIR__ . '/header.html';
-
 ?>
+ 

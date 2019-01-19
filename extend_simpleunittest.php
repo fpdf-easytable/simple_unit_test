@@ -66,13 +66,15 @@ class Test extends Unit_Test
 							</tr>';
 					}
 				}
-				
 				if(isset($result['SpyLog'])){
 					$html.='<tr style="height:2.5em;"><td colspan="8"><b>Spies</b></td></tr>';
-					foreach($result['SpyLog'] as $spy=>$data){						
-						$html.="<tr><td><b>{$spy}</b></td><td colspan=\"7\">". implode('<br/>', $data) ."</td></tr>";
+					foreach($result['SpyLog'] as $class=>$dataset){
+						foreach($dataset as $spy=>$data){						
+							$html.="<tr><td><b>[{$class}] {$spy}</b></td><td colspan=\"7\">". implode('<br/>', $data) ."</td></tr>";
+						}
 					}
-				}
+				}	
+
 			}
 		}
 		$html.='</table>';
