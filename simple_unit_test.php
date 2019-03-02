@@ -34,6 +34,7 @@ abstract class Unit_Test{
 	private $_spies=array();
 	private $_autoload=array();
 	private $_custom_rtn=array();
+	private $reset_object;
 	protected $_meta;
 	protected $meta;
 	static private $_JSON_ERRORS=[
@@ -158,6 +159,7 @@ abstract class Unit_Test{
 		$post['autoload']=$this->_autoload;
 		$post['spies']=$this->_spies;
 		$post['custom_rtn']=$this->_custom_rtn;
+		$post['reset_object']=$this->reset_object;
 		self::curly(array('unit_test'=>1,'data'=>serialize($post)), function($ch){
 			$result=array('ResponseCode'=>500,'Message'=>'');
 			$raw_response=curl_exec($ch);
@@ -175,7 +177,7 @@ abstract class Unit_Test{
 				$result['Errors'][]=['ResponseCode'=>curl_errno($ch),'Message'=>curl_error($ch)];
 			}
 			curl_close($ch);
-			if(isset($result['object_instance'])){
+			if(isset($result['object_instance']) && $this->reset_object==0){
 				$this->object_instance=$result['object_instance'];
 				unset($result['object_instance']);
 			}
@@ -194,6 +196,7 @@ abstract class Unit_Test{
 					];
 		$this->meta=$this->_meta;
 		$this->meta['Parameters']=implode('|',array_map('self::get_type',$this->_meta['Parameters']));
+		$this->reset_object=0;
 		$this->_autoload=[false, false];
 		$this->_dummies=[];
 		$this->_custom_rtn[$this->_meta['Class']]=array();
@@ -204,6 +207,11 @@ abstract class Unit_Test{
 	public function autoload($autoload, $prepend=false){
 		$this->_autoload[0]=$autoload;
 		$this->_autoload[1]=(bool)$prepend;
+	}
+	public function reset_object($reset=0){
+		if($reset==1 || $reset==2){
+			$this->reset_object=$reset;
+		}
 	}
 	public function add_dummies($class_name, $methods, $use_namespace=null){
 		if(!isset($this->_dummies[$class_name])){
@@ -300,8 +308,12 @@ abstract class Unit_Test{
 				}
 			}
 			$reflexion_class= new \ReflectionClass($input['meta']['Class']);	
+			$x_instance_class='';
 			if(!$input['object_instance']){
 				$instance_class=$reflexion_class->newInstanceArgs(unserialize($input['meta']['Parameters']));
+				if($input['reset_object']==2){
+					$x_instance_class=serialize($instance_class);
+				}
 			}
 			else{
 				$instance_class=unserialize($input['object_instance']);
@@ -312,6 +324,7 @@ abstract class Unit_Test{
 					$method_test->setAccessible(true);
 				}
 				$etime=0;
+				$test_id=0;
 				foreach($input['test_data'] as $data){
 					$test=array_shift($data);
 					$expected=array_shift($data);
@@ -321,6 +334,9 @@ abstract class Unit_Test{
 					$warnings='';
 					$result='n/a';
 					try{
+						if($input['reset_object']==2){
+							$instance_class=unserialize($x_instance_class);
+						}
 						$result=$method_test->invokeArgs($instance_class, $data);
 						if(self::evaluation($result, $expected, $input['assertion'])){
 							$status='Passed';
@@ -343,6 +359,10 @@ abstract class Unit_Test{
 					$params=array();
 					foreach($data as $par){
 						$params[]=gettype($par) . ': '. var_export($par, true);
+					}
+					if(isset(self::$response['Tests'][$test])){
+						$test.=$test_id;
+						$test_id++;
 					}
 					self::$response['Tests'][$test]=array(
 												'Status'=>$status, 

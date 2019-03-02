@@ -148,7 +148,7 @@ Compos---what? Seriously, since when the php include statement and autoload beca
 
 # Documentation
 
-**function __construct ( string $class)**
+**function __construct ( string $class [, variable list of optional parameters])**
 
 *Description*
 
@@ -158,8 +158,13 @@ Compos---what? Seriously, since when the php include statement and autoload beca
 
 class
 
-    the name of the class (fully qualified name) to be tested. Example:
-    new Test('My\Super\Drupper\Class');
+    the name of the class (fully qualified name) to be tested. As option, it can be added
+    any parameter needed to instatiate an object of the class that is being tested. 
+    Example:
+    
+    //Class  My\Super\Drupper\Class use a string parameter 'username'.
+
+    new Test('My\Super\Drupper\Class', 'username');
     
 
 **function source_file( string $source_file)**
@@ -194,11 +199,28 @@ prepend
 
     the prepend parameter of spl_autoload_register
 
+
+**reset_object(int [$reset])**
+
+*Description*
+
+    by default all the tests of a class use the same instance of the class (object). However
+    sometimes you might want to reset the object for every test.
+
+*Parameters*
+
+reset
+
+    default is 0, which means that the same instance of the class will be use across all the
+    tests of any method.
+    value 1 indicates reset object instance for every new method test.
+    value 2 will reset object instance at every test of every method being tested
+
 **function add_dummies(string $class_name, array $methods, string $use_namespace=null)**
 
 *Description*
 
-    set the methods that will be overwrite at runtime. This can be useful if you 
+    set the methods that will be override at runtime. This can be useful if you 
     need to mute an expensive method of a class or fake the return of a method or 
     if you want to try a new definition of a method without changing the original one.
 
@@ -216,18 +238,20 @@ methods
 
 use_namespace
 
-    string of semi-colon separated namespaces needed as in the definition of the class class_name.
-    For example if in the definition of the dummy you are using an object from a particular class.
-
-use_namespace
-
-    you can pass a specific namespace if it is needed for the definition of any callable.
+    string of semi-colon separated namespaces needed for the definition of the callable functions
+    use as dummies. For example if in the definition of the dummy, it requieres the instantiation
+    of an object from a particular class. So you need to pass this class in the string use_namespace
 
 *Example*
 
 ```
+	//Suppose the method we are testing use the method WebService\WebRegister::send
+	//which take few seconds to perform or has productions settings. 
+	//So we want to override WebService\WebRegister::send with a custom callable function,
+	//let's call it dummy_send. 
+	
     function dummy_send(some-parameters){
-        $obj=new Obj();
+        $obj=new Obj(); // if we suppose this is defined in the namespace NameSpace
        //some code
     }
 
@@ -462,7 +486,7 @@ class Demo {
 		$this->size='Very big';
 		$this->weight='Very heavy';
 		$this->age=0;
-		$this->data=new Helper(5);
+		$this->data=new Helper(5); // <<----- "Evil" dependency injection (obviously with lot of sarcasm)
 	}
 	
 	public function get_data($str){
@@ -895,6 +919,19 @@ and test those method with Simple Unit Test.
 **_More examples_**
 
 More examples can be found in the file [demo.php](https://github.com/fpdf-easytable/simple_unit_test/blob/master/demo.php).
+
+# FQA
+
+*Over HTTP is too complicate*
+    Really? Well I did it in less than 600 lines :-)
+
+*But none of the examples are real code example*
+    Well if you would have bothered to read the example section you would have seen one. By the way, 
+    you will never see real code examples in tutorials for other test units. You want real examples? 
+    Try it yourself.
+
+*What about dependency injection?*
+    Not a problem! See dummies and the examples are full of dependency injection.
 
 # Conclusion
 
