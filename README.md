@@ -922,15 +922,18 @@ More examples can be found in the file [demo.php](https://github.com/fpdf-easyta
 
 # FQA
 
-*Over HTTP is too complicate*
+*Over HTTP is too complicated*
+
     Really? Well I did it in less than 600 lines :-)
 
 *But none of the examples are real code example*
+
     Well if you would have bothered to read the example section you would have seen one. By the way, 
     you will never see real code examples in tutorials for other test units. You want real examples? 
     Try it yourself.
 
 *What about dependency injection?*
+
     Not a problem! See dummies and the examples are full of dependency injection.
 
 # Conclusion
