@@ -675,7 +675,7 @@ echo $Test->print_results();
 
 * Result:
 
-![Example1](http://212.67.221.142/img/example1.png)
+![Example1](http://46.32.229.68/img/example1.png)
 
 **_Example 2_**
 
@@ -779,7 +779,7 @@ echo $Test->print_results();
 
 * Result:
 
-![Example2](http://212.67.221.142/img/example2.png)
+![Example2](http://46.32.229.68/img/example2.png)
 
 **_Example 3_**
 
@@ -909,7 +909,7 @@ echo $Test->print_results();
 ```
 * Result:
 
-![Example3](http://212.67.221.142/img/example3.png)
+![Example3](http://46.32.229.68/img/example3.png)
 
 **_NOTE_**
 
